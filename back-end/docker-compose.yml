@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: admin
+        MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+        - "0.0.0.0:27017:27017"
+    networks:
+      - Mongo
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: MONGO_DATA
+        target: /data/db
+      - type: volume
+        source: MONGO_CONFIG
+        target: /data/configdb
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_PORT: "27017"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "0.0.0.0:8081:8081"
+    networks:
+      - Mongo
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    command: sh -c "echo 'Waiting for MongoDB...'; while ! nc -z mongo 27017; do sleep 1; done; echo 'MongoDB is up!'; node app"
+
+networks:
+  Mongo:
+    name: mongo-network
+
+volumes:
+  MONGO_DATA:
+    name: MONGO_DATA
+  MONGO_CONFIG:
+    name: MONGO_CONFIG
