@@ -9,6 +9,7 @@ import com.ataya.address.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,14 +26,17 @@ public class AddressManagementController {
     *
     * */
     @PostMapping("/create/info")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> createAddress(@RequestBody CreateAddressRequest createAddressrequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressManagementService.createAddress(createAddressrequest));
     }
     @PostMapping("/create/coordinates")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> createAddress(@RequestBody CreateAddressByCoordinatesRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressManagementService.createAddress(request));
     }
     @PutMapping("/update/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> updateAddress(@RequestBody UpdateAddressRequest request, @PathVariable String id) {
         return ResponseEntity.status(HttpStatus.OK).body(addressManagementService.updateAddress(request, id));
     }
