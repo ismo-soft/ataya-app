@@ -36,11 +36,11 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 request.getDistrict() + ", " +
                 request.getStreet() + ", " +
                 request.getHouseNumber() + ", " +
-                request.getCounty() + "/ " +
+                request.getCounty() + "/" +
                 request.getState();
         final String url = "https://geocode.search.hereapi.com/v1/geocode?" +
                 "q=" + freeTextAddress +
-                "&apiKey= " + HERE_API_KEY;
+                "&apiKey=" + HERE_API_KEY;
         HereGeocoderResponse response = restTemplate.getForObject(url, HereGeocoderResponse.class);
         if (response == null || response.getItems().isEmpty()) {
             return null;
@@ -57,6 +57,7 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 .stateCode(addressItemDTO.getAddress().getStateCode())
                 .state(addressItemDTO.getAddress().getState())
                 .county(addressItemDTO.getAddress().getCounty())
+                .city(addressItemDTO.getAddress().getCity())
                 .district(addressItemDTO.getAddress().getDistrict())
                 .street(addressItemDTO.getAddress().getStreet())
                 .postalCode(addressItemDTO.getAddress().getPostalCode())
@@ -78,9 +79,6 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
         if (response == null || response.getItems().isEmpty()) {
             return null;
         }
-        if (response.getItems().get(0).getScoring().getQueryScore() < SUCCESS_SCORE) {
-            return null;
-        }
         AddressItemDTO addressItemDTO = response.getItems().get(0);
         return Address.builder()
                 .addressId(addressItemDTO.getId())
@@ -90,6 +88,7 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 .stateCode(addressItemDTO.getAddress().getStateCode())
                 .state(addressItemDTO.getAddress().getState())
                 .county(addressItemDTO.getAddress().getCounty())
+                .city(addressItemDTO.getAddress().getCity())
                 .district(addressItemDTO.getAddress().getDistrict())
                 .street(addressItemDTO.getAddress().getStreet())
                 .postalCode(addressItemDTO.getAddress().getPostalCode())
@@ -105,11 +104,11 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 request.getDistrict() + ", " +
                         request.getStreet() + ", " +
                         request.getHouseNumber() + ", " +
-                        request.getCounty() + "/ " +
+                        request.getCounty() + "/" +
                         request.getState();
         final String url = "https://geocode.search.hereapi.com/v1/geocode?" +
                 "q=" + freeTextAddress +
-                "&apiKey= " + HERE_API_KEY;
+                "&apiKey=" + HERE_API_KEY;
         HereGeocoderResponse response = restTemplate.getForObject(url, HereGeocoderResponse.class);
         if (response == null || response.getItems().isEmpty()) {
             return null;
@@ -126,6 +125,7 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 .stateCode(addressItemDTO.getAddress().getStateCode())
                 .state(addressItemDTO.getAddress().getState())
                 .county(addressItemDTO.getAddress().getCounty())
+                .city(addressItemDTO.getAddress().getCity())
                 .district(addressItemDTO.getAddress().getDistrict())
                 .street(addressItemDTO.getAddress().getStreet())
                 .postalCode(addressItemDTO.getAddress().getPostalCode())

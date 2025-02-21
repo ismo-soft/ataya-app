@@ -18,6 +18,7 @@ public class AddressInfoResponse {
     private String stateCode;
     private String state;
     private String county;
+    private String city;
     private String district;
     private String street;
     private String postalCode;

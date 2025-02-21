@@ -62,7 +62,8 @@ public class SecurityConfig {
                                     "/webjars/**",
                                     "/swagger-ui.html",
                                     "/address/auth/register",
-                                    "/address/auth/login"
+                                    "/address/auth/login",
+                                    "/address/management/**"
                             ).permitAll();
                             auth.requestMatchers(HttpMethod.GET).permitAll();
                             auth.anyRequest().authenticated();

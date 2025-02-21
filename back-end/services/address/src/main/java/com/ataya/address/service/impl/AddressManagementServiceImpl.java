@@ -54,10 +54,26 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         );
         Address address = hereGeoCoderService.getAddress(request);
         if (address == null) {
-            throw new RestClientException("Address not found");
+            throw new ValidationException(
+                    "address",
+                    request.getDistrict() + ", " +
+                            request.getStreet() + ", " +
+                            request.getHouseNumber() + ", " +
+                            request.getCounty() + "/" +
+                            request.getState(),
+                    "Address not found"
+            );
         }
         address.setAddressDetails(request.getAddressDetails());
-        address.setAddressTags(request.getAddressTags().stream().map(AddressTag::valueOf).toList());
+        List<AddressTag> tags = new ArrayList<>();
+        request.getAddressTags().forEach(
+                tag -> {
+                    if (AddressTag.isValid(tag)) {
+                        tags.add(AddressTag.valueOf(tag.toUpperCase()));
+                    }
+                }
+        );
+        address.setAddressTags(tags);
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
         addressRepository.save(address);
         return ApiResponse.builder()
@@ -91,7 +107,15 @@ public class AddressManagementServiceImpl implements AddressManagementService {
             throw new RestClientException("Address not found");
         }
         address.setAddressDetails(request.getAddressDetails());
-        address.setAddressTags(request.getAddressTags().stream().map(AddressTag::valueOf).toList());
+        List<AddressTag> tags = new ArrayList<>();
+        request.getAddressTags().forEach(
+                tag -> {
+                    if (AddressTag.isValid(tag)) {
+                        tags.add(AddressTag.valueOf(tag.toUpperCase()));
+                    }
+                }
+        );
+        address.setAddressTags(tags);
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
         addressRepository.save(address);
         return ApiResponse.builder()
@@ -119,6 +143,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                     }
                 }
         );
+        System.out.println("id = " + id);
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(
                         Address.class.getSimpleName(),
@@ -126,9 +151,19 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                         "Address not found"
                 )
         );
+        System.out.println("address = " + address);
         Address hereAddress = hereGeoCoderService.getAddress(request);
         address.setAddressDetails(request.getAddressDetails());
-        address.setAddressTags(request.getAddressTags().stream().map(AddressTag::valueOf).toList());
+        List<AddressTag> tags = new ArrayList<>();
+        request.getAddressTags().forEach(
+                tag -> {
+                    if (AddressTag.isValid(tag)) {
+                        tags.add(AddressTag.valueOf(tag.toUpperCase()));
+                    }
+                }
+        );
+        System.out.println("tags = " + tags);
+        address.setAddressTags(tags);
         address.setAddressId(hereAddress.getAddressId());
         address.setLabel(hereAddress.getLabel());
         address.setCountryCode(hereAddress.getCountryCode());
@@ -136,6 +171,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         address.setStateCode(hereAddress.getStateCode());
         address.setState(hereAddress.getState());
         address.setCounty(hereAddress.getCounty());
+        address.setCity(hereAddress.getCity());
         address.setDistrict(hereAddress.getDistrict());
         address.setStreet(hereAddress.getStreet());
         address.setPostalCode(hereAddress.getPostalCode());

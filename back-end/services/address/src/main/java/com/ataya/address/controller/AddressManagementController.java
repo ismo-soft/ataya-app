@@ -26,18 +26,16 @@ public class AddressManagementController {
     *
     * */
     @PostMapping("/create/info")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> createAddress(@RequestBody CreateAddressRequest createAddressrequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressManagementService.createAddress(createAddressrequest));
     }
     @PostMapping("/create/coordinates")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> createAddress(@RequestBody CreateAddressByCoordinatesRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(addressManagementService.createAddress(request));
     }
     @PutMapping("/update/{id}")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse> updateAddress(@RequestBody UpdateAddressRequest request, @PathVariable String id) {
+        System.out.println("update address");
         return ResponseEntity.status(HttpStatus.OK).body(addressManagementService.updateAddress(request, id));
     }
     @GetMapping("/get/{id}")
