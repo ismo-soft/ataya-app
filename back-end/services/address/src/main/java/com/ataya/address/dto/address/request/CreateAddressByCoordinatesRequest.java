@@ -1,6 +1,5 @@
 package com.ataya.address.dto.address.request;
 
-import com.ataya.address.enums.AddressTag;
 import lombok.*;
 
 import java.util.List;

@@ -1,6 +1,10 @@
+/*
+* TODO: this service needs to map the response from the Here API to the Address model
+* */
 package com.ataya.address.service.impl;
 
 import com.ataya.address.dto.address.request.CreateAddressByCoordinatesRequest;
+import com.ataya.address.dto.address.request.UpdateAddressRequest;
 import com.ataya.address.dto.here.geocoder.AddressItemDTO;
 import com.ataya.address.dto.here.geocoder.HereGeocoderResponse;
 import com.ataya.address.dto.address.request.CreateAddressRequest;
@@ -17,7 +21,6 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
     @Autowired
     private RestTemplate restTemplate;
 
-
     @Value("${ataya.app.here.app.id}")
     private String HERE_APP_ID;
 
@@ -26,8 +29,6 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
 
     @Value("${ataya.app.here.success.score}")
     private Double SUCCESS_SCORE;
-
-
 
 
     public Address getAddress(CreateAddressRequest request) {
@@ -61,6 +62,7 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 .postalCode(addressItemDTO.getAddress().getPostalCode())
                 .houseNumber(addressItemDTO.getAddress().getHouseNumber())
                 .lat(addressItemDTO.getPosition().getLat())
+                .lng(addressItemDTO.getPosition().getLng())
                 .build();
 
     }
@@ -93,6 +95,44 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
                 .postalCode(addressItemDTO.getAddress().getPostalCode())
                 .houseNumber(addressItemDTO.getAddress().getHouseNumber())
                 .lat(addressItemDTO.getPosition().getLat())
+                .lng(addressItemDTO.getPosition().getLng())
                 .build();
+    }
+
+    @Override
+    public Address getAddress(UpdateAddressRequest request) {
+        final String freeTextAddress =
+                request.getDistrict() + ", " +
+                        request.getStreet() + ", " +
+                        request.getHouseNumber() + ", " +
+                        request.getCounty() + "/ " +
+                        request.getState();
+        final String url = "https://geocode.search.hereapi.com/v1/geocode?" +
+                "q=" + freeTextAddress +
+                "&apiKey= " + HERE_API_KEY;
+        HereGeocoderResponse response = restTemplate.getForObject(url, HereGeocoderResponse.class);
+        if (response == null || response.getItems().isEmpty()) {
+            return null;
+        }
+        if (response.getItems().get(0).getScoring().getQueryScore() < SUCCESS_SCORE) {
+            return null;
+        }
+        AddressItemDTO addressItemDTO = response.getItems().get(0);
+        return Address.builder()
+                .addressId(addressItemDTO.getId())
+                .label(addressItemDTO.getAddress().getLabel())
+                .countryCode(addressItemDTO.getAddress().getCountryCode())
+                .countryName(addressItemDTO.getAddress().getCountryName())
+                .stateCode(addressItemDTO.getAddress().getStateCode())
+                .state(addressItemDTO.getAddress().getState())
+                .county(addressItemDTO.getAddress().getCounty())
+                .district(addressItemDTO.getAddress().getDistrict())
+                .street(addressItemDTO.getAddress().getStreet())
+                .postalCode(addressItemDTO.getAddress().getPostalCode())
+                .houseNumber(addressItemDTO.getAddress().getHouseNumber())
+                .lat(addressItemDTO.getPosition().getLat())
+                .lng(addressItemDTO.getPosition().getLng())
+                .build();
+
     }
 }

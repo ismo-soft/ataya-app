@@ -3,6 +3,7 @@ package com.ataya.address.model;
 import com.ataya.address.enums.AddressTag;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -34,4 +35,5 @@ public class Address {
     private String addressDetails;
     private Double lat;
     private Double lng;
+    private GeoJsonPoint location;
 }
