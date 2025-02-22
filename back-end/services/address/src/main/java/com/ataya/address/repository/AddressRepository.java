@@ -14,7 +14,9 @@ import java.util.Optional;
 public interface AddressRepository extends MongoRepository<Address, String> {
     Optional<Address> findByLatAndLng(Double lat, Double lng);
 
-    Page<Address> findByAddressTagsIn(Collection<List<AddressTag>> addressTags, Pageable pageable);
+    Page<Address> findByAddressTagsIn(List<AddressTag> addressTags, Pageable pageable);
+
+    List<Address> findByAddressTagsIn(List<AddressTag> addressTags);
 
     Optional<Address> findByAddressId(String addressId);
 
@@ -30,7 +32,7 @@ public interface AddressRepository extends MongoRepository<Address, String> {
                         "'addressTags': { $in: ?3 } " +
                     "}"
     )
-    Page<Address> findNearbyAddressesByLocationAndAddressTagsIn(double lat, double lng, double distance, Collection<List<AddressTag>> addressTags, Pageable pageable);
+    Page<Address> findNearbyAddressesByLocationAndAddressTagsIn(double lat, double lng, double distance, List<AddressTag> addressTags, Pageable pageable);
 
     @Query(
             value = "{ " +

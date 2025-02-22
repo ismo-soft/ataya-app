@@ -2,6 +2,7 @@ package com.ataya.address.dto.address.response;
 
 import com.ataya.address.enums.AddressTag;
 import lombok.*;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 public class AddressInfoResponse {
     private String id;
+    private String addressId;
     private String label;
     private String countryCode;
     private String countryName;
@@ -23,8 +25,9 @@ public class AddressInfoResponse {
     private String street;
     private String postalCode;
     private String houseNumber;
-    private List<String> AddressTags;
+    private List<String> addressTags;
     private String addressDetails;
-    private String lat;
-    private String lng;
+    private Double lat;
+    private Double lng;
+    private GeoJsonPoint location;
 }
