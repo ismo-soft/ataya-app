@@ -21,5 +21,4 @@ public class WorkerDetailsResponse {
     private String companyId;
     private String managerId;
     private String profilePicture;
-    private List<Role> roles;
 }

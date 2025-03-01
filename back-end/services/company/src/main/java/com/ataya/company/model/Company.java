@@ -22,7 +22,7 @@ public class Company {
     private String id;
     private String name;
     @Indexed(unique = true)
-    private String phone;
+    private String phoneNumber;
     @Indexed(unique = true)
     private String email;
     private String address;

@@ -10,4 +10,14 @@ public interface CompanyService {
     ApiResponse getCompanyDetails(String companyId);
 
     ApiResponse updateCompany(String companyId, UpdateCompanyRequest updateCompanyRequest);
+
+    ApiResponse viewAllStores(String companyId);
+
+    ApiResponse viewAllWorkersOfCompany(String companyId);
+
+    ApiResponse viewAllManagersOfCompany(String companyId);
+
+    ApiResponse viewCompanyDetails(String companyId);
+
+    ApiResponse setCompanyAddressId(String companyId, String addressId);
 }

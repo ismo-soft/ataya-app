@@ -51,4 +51,13 @@ public enum SocialMediaPlatforms {
         }
         return null;
     }
+
+    public static boolean isPlatformExists(SocialMediaPlatforms platform) {
+        for (SocialMediaPlatforms p : SocialMediaPlatforms.values()) {
+            if (p.equals(platform)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -31,10 +28,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(registerRequest));
     }
 
-    // TODO: implement verify email
-    // verify email
-
-
     // login
     @PostMapping("/login")
     @Operation(
@@ -45,11 +38,25 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginRequest));
     }
 
-
     // forgot password
-
+    @PostMapping("/forgot-password")
+    @Operation(
+            summary = "Forgot password",
+            description = "Send email to reset password"
+    )
+    public ResponseEntity<ApiResponse> forgotPassword(@RequestParam String email) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.forgotPassword(email));
+    }
 
     // reset password
+    @PostMapping("/reset-password")
+    @Operation(
+            summary = "Reset password",
+            description = "Reset password with the given information. username, email and id one of them is enough to reset password."
+    )
+    public ResponseEntity<ApiResponse> resetPassword(@RequestParam String token, @RequestParam String id,@RequestParam String username, @RequestParam String email, @RequestBody ResetPasswordRequest password) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.resetPassword(token, id, username, email, password));
+    }
 
 
     // change password
@@ -88,7 +95,17 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(authService.changeEmail(changeEmailRequest));
     }
 
-    // TODO: implement change username
+    // verify email token
+    @PostMapping("/verify-email")
+    @Operation(
+            summary = "Verify email",
+            description = "email, id and username one of them is enough to verify email."
+    )
+    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String token, @RequestParam String email, @RequestParam String id, @RequestParam String username) {
+        return ResponseEntity.status(HttpStatus.OK).body(authService.verifyEmail(token, email, id, username));
+    }
+
+
     // change username
     @PostMapping("/change-username")
     @Operation(

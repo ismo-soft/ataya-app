@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 public class CompanyMapper {
 
-    public Object companyToCompanyDto(Company company, Class<CompanyDetailsResponse> companyDtoClass) {
+    public Object companyToCompanyDto(Company company, Class<?> companyDtoClass) {
         try {
             Object dto = companyDtoClass.getDeclaredConstructor().newInstance();
             Map<String, Field> companyFields = new HashMap<>();
@@ -94,4 +94,6 @@ public class CompanyMapper {
                     }
                 });
     }
+
+
 }

@@ -7,4 +7,8 @@ public interface CompanyRepository extends MongoRepository<Company, String> {
     boolean existsByRegistrationNumber(String registrationNumber);
 
     boolean existsByIdAndCeoId(String id, String ceoId);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByPhoneNumbwer(String phoneNumber);
 }

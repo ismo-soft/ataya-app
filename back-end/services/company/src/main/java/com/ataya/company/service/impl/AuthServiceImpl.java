@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -72,14 +74,17 @@ public class AuthServiceImpl implements AuthService {
                                 Role.ROLE_WORKER
                         )
                 )
-                // TODO: set enabled to false when email verification is implemented
-                .enabled(true)
+                .enabled(false)
                 .build();
+
+        // create verification token
+        String token = UUID.randomUUID().toString();
+        worker.setEmailVerificationToken(token);
+
 
         // save the worker
         workerRepository.save(worker);
 
-        // TODO: send an email verification link to the worker
 
         // return the response
          return ApiResponse.builder()
@@ -87,14 +92,39 @@ public class AuthServiceImpl implements AuthService {
                 .status(HttpStatus.CREATED.getReasonPhrase())
                 .statusCode(HttpStatus.CREATED.value())
                 .timestamp(LocalDateTime.now())
+                 .data(
+                         Map.of(
+                                    "verificationToken", token,
+                                    "worker", WorkerInfoResponse.builder()
+                                            .id(worker.getId())
+                                            .username(worker.getUsername())
+                                            .email(worker.getEmail())
+                                            .phone(worker.getPhoneNumber())
+                                            .companyId(worker.getCompanyId())
+                                            .storeId(worker.getStoreId())
+                                            .build()
+                                 )
+                 )
                 .build();
 
     }
 
     @Override
     public ApiResponse login(LoginRequest loginRequest) {
+        String username = loginRequest.getUsername();
+        if (loginRequest.getEmail() != null && username == null) {
+            Worker worker = workerRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "email",
+                            loginRequest.getEmail(),
+                            "Worker not found"
+                    )
+            );
+            username = worker.getUsername();
+        }
         // load user details
-        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getUsername());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         // generate a token
         String token = jwtService.generateToken(userDetails);
         // return the token
@@ -109,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
                                 .id(((Worker) userDetails).getId())
                                 .username(((Worker) userDetails).getUsername())
                                 .email(((Worker) userDetails).getEmail())
-                                .phone(((Worker) userDetails).getPhone())
+                                .phone(((Worker) userDetails).getPhoneNumber())
                                 .companyId(((Worker) userDetails).getCompanyId())
                                 .storeId(((Worker) userDetails).getStoreId())
                                 .build()
@@ -151,7 +181,7 @@ public class AuthServiceImpl implements AuthService {
                                 .id(worker.getId())
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
-                                .phone(worker.getPhone())
+                                .phone(worker.getPhoneNumber())
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
@@ -193,7 +223,7 @@ public class AuthServiceImpl implements AuthService {
                                 .id(worker.getId())
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
-                                .phone(worker.getPhone())
+                                .phone(worker.getPhoneNumber())
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
@@ -201,7 +231,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
-    // TODO: implement invalidating tokens when the username is changed
     @Override
     public ApiResponse changeUsername(ChangeUsernameRequest changeUsernameRequest) {
         // check if the worker exists
@@ -241,7 +270,7 @@ public class AuthServiceImpl implements AuthService {
                                 .id(worker.getId())
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
-                                .phone(worker.getPhone())
+                                .phone(worker.getPhoneNumber())
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
@@ -261,15 +290,15 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
         // check if the phone number is already taken
-        if (workerRepository.existsByPhone(changePhoneRequest.getPhone())) {
+        if (workerRepository.existsByPhone(changePhoneRequest.getPhoneNumber())) {
             throw new ValidationException(
                     "phone",
-                    changePhoneRequest.getPhone(),
+                    changePhoneRequest.getPhoneNumber(),
                     "Phone number is already taken"
             );
         }
         // change the phone number
-        worker.setPhone(changePhoneRequest.getPhone());
+        worker.setPhoneNumber(changePhoneRequest.getPhoneNumber());
         // save the worker
         workerRepository.save(worker);
         // return the response
@@ -283,7 +312,7 @@ public class AuthServiceImpl implements AuthService {
                                 .id(worker.getId())
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
-                                .phone(worker.getPhone())
+                                .phone(worker.getPhoneNumber())
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
@@ -346,15 +375,14 @@ public class AuthServiceImpl implements AuthService {
                 )
                 .companyId(storeService.getCompanyId(registerWorkerRequest.getStoreId()))
                 .managerId(storeService.getManagerId(registerWorkerRequest.getStoreId()))
-                // TODO : will be set to false when email verification is implemented
-                .enabled(true)
+                .enabled(false)
                 .build();
 
+        // create verification token
+        String token = UUID.randomUUID().toString();
+        worker.setEmailVerificationToken(token);
         // save
         workerRepository.save(worker);
-
-        // TODO: implement email verification
-        // send email verification link
 
         // return response
         return ApiResponse.builder()
@@ -363,15 +391,203 @@ public class AuthServiceImpl implements AuthService {
                 .statusCode(HttpStatus.CREATED.value())
                 .timestamp(LocalDateTime.now())
                 .data(
+                        Map.of(
+                                "verificationToken", token,
+                                "worker", WorkerInfoResponse.builder()
+                                        .id(worker.getId())
+                                        .username(worker.getUsername())
+                                        .email(worker.getEmail())
+                                        .phone(worker.getPhoneNumber())
+                                        .companyId(worker.getCompanyId())
+                                        .storeId(worker.getStoreId())
+                                        .build()
+                        )
+                )
+                .build();
+    }
+
+    @Override
+    public ApiResponse verifyEmail(String token, String email, String id, String username) {
+        // check if worker exists
+        Worker worker = null;
+        if (email != null) {
+            worker = workerRepository.findByEmail(email).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "email",
+                            email,
+                            "Worker not found"
+                    )
+            );
+        } else if (id != null) {
+            worker = workerRepository.findById(id).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "id",
+                            id,
+                            "Worker not found"
+                    )
+            );
+        } else if (username != null) {
+            worker = workerRepository.findByUsername(username).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "username",
+                            username,
+                            "Worker not found"
+                    )
+            );
+        }else {
+            throw new ValidationException(
+                    "email, id, username",
+                    null,
+                    "One of them is required"
+            );
+        }
+        // check if the token is correct
+        if (!worker.getEmailVerificationToken().equals(token)) {
+            throw new ValidationException(
+                    "token",
+                    token,
+                    "Token is incorrect"
+            );
+        }
+        // verify the email
+        worker.setEnabled(true);
+        worker.setEmailVerificationToken(null);
+        // save
+        workerRepository.save(worker);
+        // return response
+        return ApiResponse.builder()
+                .message("Email verified successfully")
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(
                         WorkerInfoResponse.builder()
                                 .id(worker.getId())
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
-                                .phone(worker.getPhone())
+                                .phone(worker.getPhoneNumber())
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
                 )
                 .build();
     }
+
+    @Override
+    public ApiResponse forgotPassword(String email) {
+        Worker worker = workerRepository.findByEmail(email).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Worker",
+                        "email",
+                        email,
+                        "Worker not found"
+                )
+        );
+        if (!worker.isEnabled() || worker.getEmailVerificationToken() != null){
+            throw new ValidationException(
+                    "email",
+                    email,
+                    "Email is not verified"
+            );
+        }
+        // create token
+        String token = UUID.randomUUID().toString();
+        worker.setPasswordResetToken(token);
+        // save token
+        workerRepository.save(worker);
+        // create response with token
+        return ApiResponse.builder()
+                .message("Password reset token created successfully")
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(
+                        Map.of(
+                                "resetToken", token
+                        )
+                )
+                .build();
+    }
+
+    @Override
+    public ApiResponse resetPassword(String token, String id, String username, String email, ResetPasswordRequest password) {
+        // check if the password is valid
+        if (password.getConfirmPassword() == null || !password.getNewPassword().equals(password.getConfirmPassword())) {
+            throw new ValidationException(
+                    "confirmPassword",
+                    password.getConfirmPassword(),
+                    "Passwords do not match"
+            );
+        }
+        // check if worker exists
+        Worker worker = null;
+        if (email != null) {
+            worker = workerRepository.findByEmail(email).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "email",
+                            email,
+                            "Worker not found"
+                    )
+            );
+        } else if (id != null) {
+            worker = workerRepository.findById(id).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "id",
+                            id,
+                            "Worker not found"
+                    )
+            );
+        } else if (username != null) {
+            worker = workerRepository.findByUsername(username).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "username",
+                            username,
+                            "Worker not found"
+                    )
+            );
+        }else {
+            throw new ValidationException(
+                    "email, id, username",
+                    null,
+                    "One of them is required"
+            );
+        }
+        // check if the token is correct
+        if (!worker.getPasswordResetToken().equals(token)) {
+            throw new ValidationException(
+                    "token",
+                    token,
+                    "Token is incorrect"
+            );
+        }
+        // reset the password
+        worker.setPassword(passwordEncoder.encode(password.getNewPassword()));
+        worker.setPasswordResetToken(null);
+        // save
+        workerRepository.save(worker);
+        // return response
+        return ApiResponse.builder()
+                .message("Password reset successfully")
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(
+                        WorkerInfoResponse.builder()
+                                .id(worker.getId())
+                                .username(worker.getUsername())
+                                .email(worker.getEmail())
+                                .phone(worker.getPhoneNumber())
+                                .companyId(worker.getCompanyId())
+                                .storeId(worker.getStoreId())
+                                .build()
+                )
+                .build();
+    }
+
 }

@@ -14,7 +14,7 @@ import java.util.Map;
 public class UpdateCompanyRequest {
     private String name;
     private String email;
-    private String phone;
+    private String phoneNumber;
     private String registrationNumber;
     private LocalDate dateOfIncorporation;
     private String website;
@@ -28,4 +28,5 @@ public class UpdateCompanyRequest {
     private String industry;
     private String taxId;
     private String currency;
+    private String addressId;
 }

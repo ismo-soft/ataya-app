@@ -40,19 +40,29 @@ public class DebugController {
                 "roles", worker.getRoles()
         );
     }
-    @GetMapping("/debug/ownership/{companyId}")
-    @PreAuthorize("isAuthenticated()")
-    public boolean debugOwnership(
-            @PathVariable String companyId,
-            @AuthenticationPrincipal Worker worker
-    ) {
-        return workerService.getIsCompanyOwner(companyId, worker.getId());
-    }
-
     // endpoint only for admin
     @GetMapping("/debug/admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String debugAdmin() {
         return "Hello admin";
     }
+    // endpoint only for super admin
+    @GetMapping("/debug/super-admin")
+    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    public String debugSuperAdmin() {
+        return "Hello super admin";
+    }
+    // endpoint only for worker
+    @GetMapping("/debug/worker")
+    @PreAuthorize("hasRole('ROLE_WORKER')")
+    public String debugWorker() {
+        return "Hello worker";
+    }
+    // endpoint only for manager
+    @GetMapping("/debug/manager")
+    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    public String debugManager() {
+        return "Hello manager";
+    }
+
 }

@@ -19,4 +19,10 @@ public interface AuthService {
     boolean isPasswordMatched(String id, String password);
 
     ApiResponse registerWorker(RegisterWorkerRequest registerWorkerRequest);
+
+    ApiResponse verifyEmail(String token, String email, String id, String username);
+
+    ApiResponse forgotPassword(String email);
+
+    ApiResponse resetPassword(String token, String id, String username, String email, ResetPasswordRequest password);
 }

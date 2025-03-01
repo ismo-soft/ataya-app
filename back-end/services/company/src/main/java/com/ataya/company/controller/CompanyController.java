@@ -17,15 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/company")
 @RestController
 public class CompanyController {
-    /**
-     * 1. Create a new company
-     * 2. Get company information
-     * 3. Update company information
-     * 4. view all stores of a company
-     * 5. view all workers of a company
-     * 6. view all managers of a company
-     *
-     */
 
     @Autowired
     private CompanyService companyService;
@@ -56,7 +47,7 @@ public class CompanyController {
     }
 
     // update company information
-    @PutMapping("/profile/update/{companyId}")
+    @PutMapping("/profile/{companyId}")
     @PreAuthorize(
             "hasRole('SUPER_ADMIN')"
     )
@@ -66,5 +57,75 @@ public class CompanyController {
     )
     public ResponseEntity<ApiResponse> updateCompany(@PathVariable String companyId, @RequestBody UpdateCompanyRequest updateCompanyRequest) {
         return ResponseEntity.ok(companyService.updateCompany(companyId, updateCompanyRequest));
+    }
+
+    // view all stores of a company
+    @GetMapping("/stores/{companyId}")
+    @PreAuthorize(
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
+            "#companyId == authentication.principal.companyId"
+    )
+    @Operation(
+            summary = "View all stores of a company",
+            description = "View all stores of a company with the given company id"
+    )
+    public ResponseEntity<ApiResponse> viewAllStores(@PathVariable String companyId) {
+        return ResponseEntity.ok(companyService.viewAllStores(companyId));
+    }
+
+    // view all workers of a company
+    @GetMapping("/workers/{companyId}")
+    @PreAuthorize(
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
+            "#companyId == authentication.principal.companyId"
+    )
+    @Operation(
+            summary = "View all workers of a company",
+            description = "View all workers of a company with the given company id"
+    )
+    public ResponseEntity<ApiResponse> viewAllWorkers(@PathVariable String companyId) {
+        return ResponseEntity.ok(companyService.viewAllWorkersOfCompany(companyId));
+    }
+
+    // view all managers of a company
+    @GetMapping("/managers/{companyId}")
+    @PreAuthorize(
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
+            "#companyId == authentication.principal.companyId"
+    )
+    @Operation(
+            summary = "View all managers of a company",
+            description = "View all managers of a company with the given company id"
+    )
+    public ResponseEntity<ApiResponse> viewAllManagers(@PathVariable String companyId) {
+        return ResponseEntity.ok(companyService.viewAllManagersOfCompany(companyId));
+    }
+
+    // view company details
+    @GetMapping("/details/{companyId}")
+    @PreAuthorize(
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
+            "#companyId == authentication.principal.companyId"
+    )
+    @Operation(
+            summary = "View company details",
+            description = "View company details with the given company id"
+    )
+    public ResponseEntity<ApiResponse> viewCompanyDetails(@PathVariable String companyId) {
+        return ResponseEntity.ok(companyService.viewCompanyDetails(companyId));
+    }
+
+    // set company addressId
+    @PutMapping("/address/{companyId}")
+    @PreAuthorize(
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
+            "#companyId == authentication.principal.companyId"
+    )
+    @Operation(
+            summary = "Set company addressId",
+            description = "Set company addressId with the given company id"
+    )
+    public ResponseEntity<ApiResponse> setCompanyAddressId(@PathVariable String companyId, @RequestParam String addressId) {
+        return ResponseEntity.ok(companyService.setCompanyAddressId(companyId, addressId));
     }
 }

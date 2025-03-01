@@ -1,11 +1,9 @@
-package com.ataya.company.model;
+package com.ataya.company.dto.store.response;
 
 import com.ataya.company.enums.SocialMediaPlatforms;
 import com.ataya.company.enums.StoreStatus;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -16,21 +14,16 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "store")
-public class Store {
-    @Id
+public class StoreResponse {
     private String id;
     private String name;
     private String storeCode;
     private String description;
     private String profilePhoto;
-    @Indexed(unique = true)
     private String email;
-    @Indexed(unique = true)
     private String phoneNumber;
     private String website;
     private Map<SocialMediaPlatforms, String> socialMedia;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate creationDate;
     private StoreStatus status;
     private String addressId;

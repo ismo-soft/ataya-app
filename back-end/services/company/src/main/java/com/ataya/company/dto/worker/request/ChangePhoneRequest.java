@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 public class ChangePhoneRequest {
     private String id;
-    private String phone;
+    private String phoneNumber;
     private String password;
 }

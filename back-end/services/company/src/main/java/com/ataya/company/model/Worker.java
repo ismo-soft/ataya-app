@@ -30,7 +30,7 @@ public class Worker implements UserDetails {
     @Indexed(unique = true)
     private String email;
     @Indexed(unique = true)
-    private String phone;
+    private String phoneNumber;
     private String storeId;
     private String companyId;
     private String managerId;
@@ -40,6 +40,8 @@ public class Worker implements UserDetails {
     private boolean accountNonExpired = true;
     private boolean credentialsNonExpired = true;
     private boolean accountNonLocked = true;
+    private String emailVerificationToken;
+    private String passwordResetToken;
 
 
     @Override
