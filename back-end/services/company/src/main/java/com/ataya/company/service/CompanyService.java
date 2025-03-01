@@ -4,6 +4,8 @@ import com.ataya.company.dto.company.CreateCompanyRequest;
 import com.ataya.company.dto.company.UpdateCompanyRequest;
 import com.ataya.company.util.ApiResponse;
 
+import java.util.List;
+
 public interface CompanyService {
     ApiResponse createCompany(CreateCompanyRequest createCompanyRequest, String CEOid);
 
@@ -20,4 +22,12 @@ public interface CompanyService {
     ApiResponse viewCompanyDetails(String companyId);
 
     ApiResponse setCompanyAddressId(String companyId, String addressId);
+
+    boolean existsById(String companyId);
+
+    List<Object> getStoreWorkers(String companyId, String storeId);
+
+    List<Object> getStoreManagers(String companyId, String storeId);
+
+    boolean isWorkerBelongToStoreAndManager(String storeId, String workerId);
 }

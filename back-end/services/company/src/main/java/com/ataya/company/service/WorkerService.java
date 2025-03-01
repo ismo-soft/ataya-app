@@ -40,4 +40,12 @@ public interface WorkerService {
     ApiResponse lockWorker(String id);
 
     ApiResponse unlockWorker(String id);
+
+    List<Object> getStoreWorkers(String companyId, String storeId);
+
+    List<Object> getStoreManagers(String companyId, String storeId);
+
+    boolean isStoreWorker(String storeId, String workerId);
+
+    boolean hasRole(String workerId, String roleManager);
 }

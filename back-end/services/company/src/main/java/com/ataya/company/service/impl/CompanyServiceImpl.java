@@ -18,6 +18,7 @@ import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -36,7 +37,9 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Autowired
     private WorkerService workerService;
+
     @Autowired
+    @Lazy
     private StoreService storeService;
 
     @Override
@@ -262,5 +265,28 @@ public class CompanyServiceImpl implements CompanyService {
                 )
                 .statusCode(200)
                 .build();
+    }
+
+    @Override
+    public boolean existsById(String companyId) {
+        return companyRepository.existsById(companyId);
+    }
+
+    @Override
+    public List<Object> getStoreWorkers(String companyId, String storeId) {
+        return workerService.getStoreWorkers(companyId, storeId);
+    }
+
+    @Override
+    public List<Object> getStoreManagers(String companyId, String storeId) {
+        return workerService.getStoreManagers(companyId, storeId);
+    }
+
+    @Override
+    public boolean isWorkerBelongToStoreAndManager(String storeId, String workerId) {
+        if (storeId == null || workerId == null) {
+            return false;
+        }
+        return workerService.isStoreWorker(storeId, workerId) && workerService.hasRole(workerId, "ROLE_MANAGER");
     }
 }

@@ -26,6 +26,7 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Autowired
     private WorkerMapper workerMapper;
+
     @Autowired
     private StoreService storeService;
 
@@ -124,7 +125,7 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Override
     public List<Object> getAllManagersOfCompany(String companyId) {
-        List<Worker> workers = workerRepository.findAllByCompanyIdAndRolesContains(companyId,List.of(Role.ROLE_MANAGER));
+        List<Worker> workers = workerRepository.findAllByCompanyIdAndRolesContains(companyId, Role.ROLE_MANAGER);
         List<Object> response = new ArrayList<>();
         for (Worker worker : workers) {
             response.add(
@@ -147,7 +148,7 @@ public class WorkerServiceImpl implements WorkerService {
                     "Worker does not have a company"
             );
         }
-        if(!storeService.isStoreBelontToCompany(storeId,worker.getCompanyId())){
+        if(!storeService.isStoreBelongToCompany(storeId,worker.getCompanyId())){
             throw new ValidationException(
                     "storeId",
                     storeId,
@@ -424,6 +425,48 @@ public class WorkerServiceImpl implements WorkerService {
                         workerMapper.workerToWorkerDto(worker, WorkerDetailsResponse.class)
                 )
                 .build();
+    }
+
+    @Override
+    public List<Object> getStoreWorkers(String companyId, String storeId) {
+        List<Worker> workers = workerRepository.findAllByCompanyIdAndStoreId(companyId, storeId);
+        List<Object> response = new ArrayList<>();
+        for (Worker worker : workers) {
+            response.add(
+                    workerMapper.workerToWorkerDto(worker, WorkerDetailsResponse.class)
+            );
+        }
+        return response;
+    }
+
+    @Override
+    public List<Object> getStoreManagers(String companyId, String storeId) {
+        List<Worker> workers = workerRepository.findAllByCompanyIdAndStoreIdAndRolesContains(companyId, storeId, Role.ROLE_MANAGER);
+        List<Object> response = new ArrayList<>();
+        for (Worker worker : workers) {
+            response.add(
+                    workerMapper.workerToWorkerDto(worker, WorkerDetailsResponse.class)
+            );
+        }
+        return response;
+    }
+
+    @Override
+    public boolean isStoreWorker(String storeId, String workerId) {
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Worker", "id", workerId)
+                );
+        return worker.getStoreId().equals(storeId);
+    }
+
+    @Override
+    public boolean hasRole(String workerId, String roleManager) {
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Worker", "id", workerId)
+                );
+        return worker.getRoles().contains(Role.valueOf(roleManager));
     }
 
     public boolean isWorkerOfUserCompany(String workerId, String companyId) {

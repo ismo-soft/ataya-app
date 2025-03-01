@@ -26,5 +26,9 @@ public interface WorkerRepository extends MongoRepository<Worker, String> {
 
     List<Worker> findAllByCompanyId(String companyId);
 
-    List<Worker> findAllByCompanyIdAndRolesContains(String companyId, List<Role> roles);
+    List<Worker> findAllByCompanyIdAndRolesContains(String companyId,Role roles);
+
+    List<Worker> findAllByCompanyIdAndStoreId(String companyId, String storeId);
+
+    List<Worker> findAllByCompanyIdAndStoreIdAndRolesContains(String companyId, String storeId, Role role);
 }

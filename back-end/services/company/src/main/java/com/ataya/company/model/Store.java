@@ -23,7 +23,7 @@ public class Store {
     private String name;
     private String storeCode;
     private String description;
-    private String profilePhoto;
+    private String profilePicture;
     @Indexed(unique = true)
     private String email;
     @Indexed(unique = true)
