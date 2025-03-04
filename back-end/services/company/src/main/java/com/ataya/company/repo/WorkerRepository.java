@@ -15,7 +15,7 @@ public interface WorkerRepository extends MongoRepository<Worker, String> {
 
     boolean existsByEmail(String email);
 
-    boolean existsByPhone(String phone);
+    boolean existsByPhoneNumber(String phone);
 
     @Query(value = "{ '_id' : ?0 }", fields = "{ 'storeId' : 1, '_id' : 0 }")
     Optional<String> getStoreIdOfWorker(String userId);

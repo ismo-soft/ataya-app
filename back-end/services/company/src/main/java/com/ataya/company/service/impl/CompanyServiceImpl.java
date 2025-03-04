@@ -101,7 +101,7 @@ public class CompanyServiceImpl implements CompanyService {
             throw new DuplicateResourceException("Company", "email", updateCompanyRequest.getEmail(), null);
         }
         // check if phone number already exists
-        if (updateCompanyRequest.getPhoneNumber() != null && companyRepository.existsByPhoneNumbwer(updateCompanyRequest.getPhoneNumber())) {
+        if (updateCompanyRequest.getPhoneNumber() != null && companyRepository.existsByPhoneNumber(updateCompanyRequest.getPhoneNumber())) {
             throw new DuplicateResourceException("Company", "phoneNumber", updateCompanyRequest.getPhoneNumber(), null);
         }
         // check if registration number already exists

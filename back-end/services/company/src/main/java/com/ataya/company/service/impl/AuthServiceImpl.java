@@ -290,7 +290,7 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
         // check if the phone number is already taken
-        if (workerRepository.existsByPhone(changePhoneRequest.getPhoneNumber())) {
+        if (workerRepository.existsByPhoneNumber(changePhoneRequest.getPhoneNumber())) {
             throw new ValidationException(
                     "phone",
                     changePhoneRequest.getPhoneNumber(),
