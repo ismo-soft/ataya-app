@@ -54,7 +54,13 @@ public class AuthController {
             summary = "Reset password",
             description = "Reset password with the given information. username, email and id one of them is enough to reset password."
     )
-    public ResponseEntity<ApiResponse> resetPassword(@RequestParam String token, @RequestParam String id,@RequestParam String username, @RequestParam String email, @RequestBody ResetPasswordRequest password) {
+    public ResponseEntity<ApiResponse> resetPassword(
+            @RequestParam String token,
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestBody ResetPasswordRequest password
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.resetPassword(token, id, username, email, password));
     }
 
