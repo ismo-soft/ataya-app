@@ -8,6 +8,7 @@ import com.ataya.company.exception.Custom.ValidationException;
 import com.ataya.company.model.Worker;
 import com.ataya.company.repo.WorkerRepository;
 import com.ataya.company.security.jwt.JwtService;
+import com.ataya.company.security.service.UserDetailsServiceImpl;
 import com.ataya.company.service.AuthService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.util.ApiResponse;
@@ -33,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private JwtService jwtService;

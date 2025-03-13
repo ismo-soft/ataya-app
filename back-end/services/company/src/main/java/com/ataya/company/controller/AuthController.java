@@ -101,7 +101,12 @@ public class AuthController {
             summary = "Verify email",
             description = "email, id and username one of them is enough to verify email."
     )
-    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam String token, @RequestParam String email, @RequestParam String id, @RequestParam String username) {
+    public ResponseEntity<ApiResponse> verifyEmail(
+            @RequestParam String token,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String username
+    ) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.verifyEmail(token, email, id, username));
     }
 
