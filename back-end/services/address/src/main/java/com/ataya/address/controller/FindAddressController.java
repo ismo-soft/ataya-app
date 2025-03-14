@@ -13,8 +13,11 @@ import java.util.List;
 @RequestMapping("/address/find")
 public class FindAddressController {
 
-    @Autowired
-    private AddressService addressService;
+    private final AddressService addressService;
+
+    public FindAddressController(AddressService addressService) {
+        this.addressService = addressService;
+    }
 
     @GetMapping("/by-coordinates")
     @Operation(summary = "Get address by coordinates")

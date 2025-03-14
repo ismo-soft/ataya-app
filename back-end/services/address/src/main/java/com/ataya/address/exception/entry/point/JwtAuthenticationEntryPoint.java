@@ -25,12 +25,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .timestamp(String.valueOf(System.currentTimeMillis()))
                 .additionalDetails(null)
                 .build();
-        System.out.println(authException.getMessage());
-        System.out.println(authException.getLocalizedMessage());
-        System.out.println(authException.toString());
-        System.out.println(authException.getStackTrace());
-        System.out.println(authException.getCause());
-        System.out.println(authException.getSuppressed());
         response.getWriter().write(errorResponse.toString());
     }
 }

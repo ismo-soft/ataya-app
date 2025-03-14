@@ -1,6 +1,5 @@
 package com.ataya.address.service.impl;
 
-import com.ataya.address.dto.address.response.AddressInfoResponse;
 import com.ataya.address.enums.AddressTag;
 import com.ataya.address.exception.Custom.ResourceNotFoundException;
 import com.ataya.address.exception.Custom.ValidationException;
@@ -9,26 +8,27 @@ import com.ataya.address.model.Address;
 import com.ataya.address.repository.AddressRepository;
 import com.ataya.address.service.AddressService;
 import com.ataya.address.util.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class AddressServiceImpl implements AddressService {
 
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private AddressMapper addressMapper;
+
+    private final AddressRepository addressRepository;
+    private final AddressMapper addressMapper;
+
+    public AddressServiceImpl(AddressRepository addressRepository, AddressMapper addressMapper) {
+        this.addressRepository = addressRepository;
+        this.addressMapper = addressMapper;
+    }
 
     @Override
     public ApiResponse getAddressByCoordinates(Double lat, Double lng) {
@@ -52,17 +52,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public ApiResponse getAddressByTags(List<String> tags, Integer page, Integer size) {
-        for (String tag : tags) {
-            if (!AddressTag.isValid(tag)) {
-                throw new ValidationException(
-                        AddressTag.class.getSimpleName(),
-                        "tag",
-                        "Invalid address tag: " + tag
-                );
-            }
-        }
-        tags = tags.stream().map(String::toUpperCase).toList();
-        List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
+        List<AddressTag> addressTags = validateTags(tags);
         if(page !=null && size != null){
             Pageable pageable = PageRequest.of(page, size);
             Page<Address> addresses = addressRepository.findByAddressTagsIn(addressTags, pageable);
@@ -93,6 +83,20 @@ public class AddressServiceImpl implements AddressService {
                     .data(response)
                     .build();
         }
+    }
+
+    private List<AddressTag> validateTags(List<String> tags) {
+        for (String tag : tags) {
+            if (!AddressTag.isValid(tag)) {
+                throw new ValidationException(
+                        AddressTag.class.getSimpleName(),
+                        "tag",
+                        "Invalid address tag: " + tag
+                );
+            }
+        }
+        tags = tags.stream().map(String::toUpperCase).toList();
+        return tags.stream().map(AddressTag::valueOf).toList();
     }
 
     @Override
@@ -149,22 +153,15 @@ public class AddressServiceImpl implements AddressService {
                     "Invalid distance"
             );
         }
+        return getApiResponse(lat, lng, distance, tags, page, size);
+    }
+
+    private ApiResponse getApiResponse(Double lat, Double lng, Integer distance, List<String> tags, Integer page, Integer size) {
         if (page != null && size != null) {
             Pageable pageable = PageRequest.of(page, size);
             Page<Address> addresses;
             if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, addressTags, pageable);
+                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, validateTags(tags), pageable);
             } else {
                 addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, pageable);
             }
@@ -184,18 +181,7 @@ public class AddressServiceImpl implements AddressService {
         } else {
             List<Address> addresses;
             if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat, lng, distance, addressTags, PageRequest.of(0, 10)).toList();
+                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat, lng, distance, validateTags(tags), PageRequest.of(0, 10)).toList();
             } else {
                 addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, PageRequest.of(0, 10)).toList();
             }
@@ -242,70 +228,14 @@ public class AddressServiceImpl implements AddressService {
                     "Coordinates not found"
             );
         }
-        double lat = address.getLat();
-        double lng = address.getLng();
-        if (page != null && size != null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Address> addresses;
-            if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, addressTags, pageable);
-            } else {
-                addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, pageable);
-            }
-            List<Object> response = new ArrayList<>();
-            for (Address nearbyAddress : addresses) {
-                response.add(addressMapper.toDto(nearbyAddress));
-            }
-            return ApiResponse.builder()
-                    .message("Nearby addresses found")
-                    .status(HttpStatus.OK.getReasonPhrase())
-                    .statusCode(HttpStatus.OK.value())
-                    .timestamp(LocalDateTime.now())
-                    .page(page)
-                    .size(size)
-                    .data(response)
-                    .build();
-        } else {
-            List<Address> addresses;
-            if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, addressTags, PageRequest.of(0, 10)).toList();
-            } else {
-                addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, PageRequest.of(0, 10)).toList();
-            }
-            List<Object> response = new ArrayList<>();
-            for (Address nearbyAddress : addresses) {
-                response.add(addressMapper.toDto(nearbyAddress));
-            }
-            return ApiResponse.builder()
-                    .message("Nearby addresses found")
-                    .status(HttpStatus.OK.getReasonPhrase())
-                    .statusCode(HttpStatus.OK.value())
-                    .timestamp(LocalDateTime.now())
-                    .data(response)
-                    .build();
-        }
+        return getApiResponse(
+                address.getLat(),
+                address.getLng(),
+                distance,
+                tags,
+                page,
+                size
+        );
     }
 
     @Override
@@ -337,70 +267,14 @@ public class AddressServiceImpl implements AddressService {
                     "Coordinates not found"
             );
         }
-        double lat = address.getLat();
-        double lng = address.getLng();
-        if (page != null && size != null) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Address> addresses;
-            if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, addressTags, pageable);
-            } else {
-                addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, pageable);
-            }
-            List<Object> response = new ArrayList<>();
-            for (Address nearbyAddress : addresses) {
-                response.add(addressMapper.toDto(nearbyAddress));
-            }
-            return ApiResponse.builder()
-                    .message("Nearby addresses found")
-                    .status(HttpStatus.OK.getReasonPhrase())
-                    .statusCode(HttpStatus.OK.value())
-                    .timestamp(LocalDateTime.now())
-                    .page(page)
-                    .size(size)
-                    .data(response)
-                    .build();
-        } else {
-            List<Address> addresses;
-            if (tags != null && !tags.isEmpty()) {
-                for (String tag : tags) {
-                    if (!AddressTag.isValid(tag)) {
-                        throw new ValidationException(
-                                AddressTag.class.getSimpleName(),
-                                "tag",
-                                "Invalid address tag: " + tag
-                        );
-                    }
-                }
-                tags = tags.stream().map(String::toUpperCase).toList();
-                List<AddressTag> addressTags = tags.stream().map(AddressTag::valueOf).toList();
-                addresses = addressRepository.findNearbyAddressesByLocationAndAddressTagsIn(lat,lng, distance, addressTags, PageRequest.of(0, 10)).toList();
-            } else {
-                addresses = addressRepository.findNearbyAddressesByLocation(lat, lng, distance, PageRequest.of(0, 10)).toList();
-            }
-            List<Object> response = new ArrayList<>();
-            for (Address nearbyAddress : addresses) {
-                response.add(addressMapper.toDto(nearbyAddress));
-            }
-            return ApiResponse.builder()
-                    .message("Nearby addresses found")
-                    .status(HttpStatus.OK.getReasonPhrase())
-                    .statusCode(HttpStatus.OK.value())
-                    .timestamp(LocalDateTime.now())
-                    .data(response)
-                    .build();
-        }
+        return getApiResponse(
+                address.getLat(),
+                address.getLng(),
+                distance,
+                tags,
+                page,
+                size
+        );
 
     }
 

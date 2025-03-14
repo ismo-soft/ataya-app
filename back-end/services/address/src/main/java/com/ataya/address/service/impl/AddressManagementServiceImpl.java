@@ -28,11 +28,14 @@ import java.util.List;
 @Service
 public class AddressManagementServiceImpl implements AddressManagementService {
 
-    @Autowired
-    private AddressRepository addressRepository;
+    private final AddressRepository addressRepository;
 
-    @Autowired
-    private HereGeoCoderService hereGeoCoderService;
+    private final HereGeoCoderService hereGeoCoderService;
+
+    public AddressManagementServiceImpl(AddressRepository addressRepository, HereGeoCoderService hereGeoCoderService) {
+        this.addressRepository = addressRepository;
+        this.hereGeoCoderService = hereGeoCoderService;
+    }
 
     @Override
     public ApiResponse createAddress(CreateAddressRequest request) {
@@ -143,7 +146,6 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                     }
                 }
         );
-        System.out.println("id = " + id);
         Address address = addressRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException(
                         Address.class.getSimpleName(),
@@ -151,7 +153,6 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                         "Address not found"
                 )
         );
-        System.out.println("address = " + address);
         Address hereAddress = hereGeoCoderService.getAddress(request);
         address.setAddressDetails(request.getAddressDetails());
         List<AddressTag> tags = new ArrayList<>();
@@ -162,7 +163,6 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                     }
                 }
         );
-        System.out.println("tags = " + tags);
         address.setAddressTags(tags);
         address.setAddressId(hereAddress.getAddressId());
         address.setLabel(hereAddress.getLabel());

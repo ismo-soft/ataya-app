@@ -40,8 +40,12 @@ public class SecurityConfig {
     @Value("${ataya.app.buffer.in.memory.user.password}")
     private String password;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthFilter;
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
