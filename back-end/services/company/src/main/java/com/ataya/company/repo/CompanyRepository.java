@@ -6,9 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface CompanyRepository extends MongoRepository<Company, String> {
     boolean existsByRegistrationNumber(String registrationNumber);
 
-    boolean existsByIdAndCeoId(String id, String ceoId);
 
-    boolean existsByEmail(String email);
 
-    boolean existsByPhoneNumber(String phoneNumber);
 }

@@ -4,6 +4,7 @@ import com.ataya.company.exception.Custom.*;
 import com.ataya.company.util.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -11,6 +12,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -100,5 +103,22 @@ public class GlobalExceptionHandler {
                 .additionalDetails(ex.getAdditionalDetails())
                 .build();
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .message("Validation error")
+                .httpcode(HttpStatus.BAD_REQUEST.value())
+                .httpstatus(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .timestamp(LocalDateTime.now().format(DATE_TIME_FORMATTER))
+                .additionalDetails(errors)
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

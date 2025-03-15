@@ -27,4 +27,6 @@ public interface AuthService {
     ApiResponse<WorkerInfoResponse> resetPassword(String token, String id, String username, String email, ResetPasswordRequest password);
 
     ApiResponse<WorkerInfoResponse> registerWorker(RegisterWorkerRequest registerWorkerRequest, Worker authenticatedUser);
+
+    String getRoles(Worker authenticatedPrincipal);
 }

@@ -625,4 +625,10 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    @Override
+    public String getRoles(Worker authenticatedPrincipal) {
+        // get roles
+        return authenticatedPrincipal.getRoles().toString();
+    }
+
 }

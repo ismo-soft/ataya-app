@@ -1,34 +1,24 @@
-package com.ataya.company.model;
+package com.ataya.company.dto.company;
+
 
 import com.ataya.company.enums.SocialMediaPlatforms;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.Map;
-
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "company")
-public class Company {
-    @Id
+public class CompanyInfoResponse {
     private String id;
     private String name;
-    @Indexed(unique = true)
-    private String phoneNumber;
-    @Indexed(unique = true)
     private String email;
-    private String address;
+    private String phone;
     private String registrationNumber;
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate dateOfIncorporation;
+    private LocalDate dateOfRegistration;
     private String website;
     private String logo;
     private String description;

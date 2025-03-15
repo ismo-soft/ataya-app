@@ -7,6 +7,7 @@ import com.ataya.company.model.Worker;
 import com.ataya.company.service.AuthService;
 import com.ataya.company.util.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -138,7 +139,7 @@ public class AuthController {
                     "#changeEmailRequest.password" +
             ")"
     )
-    public ResponseEntity<ApiResponse<WorkerInfoResponse>> changeEmail(@RequestBody ChangeEmailRequest changeEmailRequest) {
+    public ResponseEntity<ApiResponse<WorkerInfoResponse>> changeEmail(@Valid @RequestBody ChangeEmailRequest changeEmailRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.changeEmail(changeEmailRequest));
     }
 

@@ -3,8 +3,6 @@ package com.ataya.company.dto.store.response;
 import com.ataya.company.enums.SocialMediaPlatforms;
 import com.ataya.company.enums.StoreStatus;
 import lombok.*;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -14,7 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class StoreResponse {
+public class StoreInfoResponse {
     private String id;
     private String name;
     private String storeCode;
