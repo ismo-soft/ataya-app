@@ -1,28 +1,30 @@
 package com.ataya.company.service;
 
 import com.ataya.company.dto.worker.request.*;
+import com.ataya.company.dto.worker.response.WorkerInfoResponse;
+import com.ataya.company.model.Worker;
 import com.ataya.company.util.ApiResponse;
 
 public interface AuthService {
-    ApiResponse register(RegisterRequest request);
+    ApiResponse<WorkerInfoResponse> register(RegisterRequest request);
 
-    ApiResponse login(LoginRequest loginRequest);
+    ApiResponse<WorkerInfoResponse> login(LoginRequest loginRequest);
 
-    ApiResponse changePassword(ChangePasswordRequest changePasswordRequest);
+    ApiResponse<WorkerInfoResponse> changePassword(ChangePasswordRequest changePasswordRequest);
 
-    ApiResponse changeEmail(ChangeEmailRequest changeEmailRequest);
+    ApiResponse<WorkerInfoResponse> changeEmail(ChangeEmailRequest changeEmailRequest);
 
-    ApiResponse changeUsername(ChangeUsernameRequest changeUsernameRequest);
+    ApiResponse<WorkerInfoResponse> changeUsername(ChangeUsernameRequest changeUsernameRequest);
 
-    ApiResponse changePhone(ChangePhoneRequest changePhoneRequest);
+    ApiResponse<WorkerInfoResponse> changePhone(ChangePhoneRequest changePhoneRequest);
 
     boolean isPasswordMatched(String id, String password);
 
-    ApiResponse registerWorker(RegisterWorkerRequest registerWorkerRequest);
+    ApiResponse<WorkerInfoResponse> verifyEmail(String token, String email, String id, String username);
 
-    ApiResponse verifyEmail(String token, String email, String id, String username);
+    ApiResponse<WorkerInfoResponse> forgotPassword(String email);
 
-    ApiResponse forgotPassword(String email);
+    ApiResponse<WorkerInfoResponse> resetPassword(String token, String id, String username, String email, ResetPasswordRequest password);
 
-    ApiResponse resetPassword(String token, String id, String username, String email, ResetPasswordRequest password);
+    ApiResponse<WorkerInfoResponse> registerWorker(RegisterWorkerRequest registerWorkerRequest, Worker authenticatedUser);
 }

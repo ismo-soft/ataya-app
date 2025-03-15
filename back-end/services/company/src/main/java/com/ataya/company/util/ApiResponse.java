@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @NoArgsConstructor
-public class ApiResponse {
+public class ApiResponse<T> {
     private int statusCode;
     private String status;
     private String message;
@@ -18,5 +18,5 @@ public class ApiResponse {
     private int size;
     private int total;
     private int totalPages;
-    private Object data;
+    private T data;
 }

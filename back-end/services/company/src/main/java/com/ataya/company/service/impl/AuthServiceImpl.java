@@ -3,6 +3,7 @@ package com.ataya.company.service.impl;
 import com.ataya.company.dto.worker.request.*;
 import com.ataya.company.dto.worker.response.WorkerInfoResponse;
 import com.ataya.company.enums.Role;
+import com.ataya.company.exception.Custom.InvalidOperationException;
 import com.ataya.company.exception.Custom.ResourceNotFoundException;
 import com.ataya.company.exception.Custom.ValidationException;
 import com.ataya.company.model.Worker;
@@ -10,42 +11,52 @@ import com.ataya.company.repo.WorkerRepository;
 import com.ataya.company.security.jwt.JwtService;
 import com.ataya.company.security.service.UserDetailsServiceImpl;
 import com.ataya.company.service.AuthService;
-import com.ataya.company.service.StoreService;
 import com.ataya.company.util.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private WorkerRepository workerRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final WorkerRepository workerRepository;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    @Autowired
-    private StoreService storeService;
+    private final JwtService jwtService;
 
+    public AuthServiceImpl(WorkerRepository workerRepository, PasswordEncoder passwordEncoder, UserDetailsServiceImpl userDetailsService, JwtService jwtService) {
+        this.workerRepository = workerRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userDetailsService = userDetailsService;
+        this.jwtService = jwtService;
+    }
 
 
     @Override
-    public ApiResponse register(RegisterRequest request) {
+    public ApiResponse<WorkerInfoResponse> register(RegisterRequest request) {
+        if (request.getUsername() == null || request.getUsername().isEmpty()) {
+            throw new ValidationException(
+                    "username",
+                    request.getUsername(),
+                    "Username is required"
+            );
+        }
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new ValidationException(
+                    "email",
+                    request.getEmail(),
+                    "Email is required"
+            );
+        }
         // check if the username is already taken
         if (workerRepository.existsByUsername(request.getUsername())) {
             throw new ValidationException(
@@ -88,30 +99,27 @@ public class AuthServiceImpl implements AuthService {
 
 
         // return the response
-         return ApiResponse.builder()
-                .message("Worker registered successfully")
-                .status(HttpStatus.CREATED.getReasonPhrase())
-                .statusCode(HttpStatus.CREATED.value())
-                .timestamp(LocalDateTime.now())
-                 .data(
-                         Map.of(
-                                    "verificationToken", token,
-                                    "worker", WorkerInfoResponse.builder()
-                                            .id(worker.getId())
-                                            .username(worker.getUsername())
-                                            .email(worker.getEmail())
-                                            .phone(worker.getPhoneNumber())
-                                            .companyId(worker.getCompanyId())
-                                            .storeId(worker.getStoreId())
-                                            .build()
-                                 )
-                 )
-                .build();
-
+        ApiResponse<WorkerInfoResponse> response = new ApiResponse<>();
+        response.setMessage("Worker registered successfully");
+        response.setStatus(HttpStatus.CREATED.getReasonPhrase());
+        response.setStatusCode(HttpStatus.CREATED.value());
+        response.setTimestamp(LocalDateTime.now());
+        response.setData(
+                WorkerInfoResponse.builder()
+                        .id(worker.getId())
+                        .username(worker.getUsername())
+                        .email(worker.getEmail())
+                        .phone(worker.getPhoneNumber())
+                        .token(token)
+                        .companyId(worker.getCompanyId())
+                        .storeId(worker.getStoreId())
+                        .build()
+        );
+        return response;
     }
 
     @Override
-    public ApiResponse login(LoginRequest loginRequest) {
+    public ApiResponse<WorkerInfoResponse> login(LoginRequest loginRequest) {
         String username = loginRequest.getUsername();
         if (loginRequest.getEmail() != null && username == null) {
             Worker worker = workerRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
@@ -126,30 +134,44 @@ public class AuthServiceImpl implements AuthService {
         }
         // load user details
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        // check if the password is correct
+        if (!passwordEncoder.matches(loginRequest.getPassword(), userDetails.getPassword())) {
+            throw new ValidationException(
+                    "password",
+                    loginRequest.getPassword(),
+                    "Password is incorrect"
+            );
+        }
+        if (!userDetails.isEnabled()) {
+            throw new ValidationException(
+                    "email",
+                    loginRequest.getEmail(),
+                    "Email is not verified"
+            );
+        }
         // generate a token
         String token = jwtService.generateToken(userDetails);
         // return the token
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Login successful")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .timestamp(LocalDateTime.now())
                 .data(
                         WorkerInfoResponse.builder()
+                                .id(userDetails.getUsername())
+                                .username(userDetails.getUsername())
+                                .email(userDetails.getUsername())
+                                .phone(userDetails.getUsername())
                                 .token(token)
-                                .id(((Worker) userDetails).getId())
-                                .username(((Worker) userDetails).getUsername())
-                                .email(((Worker) userDetails).getEmail())
-                                .phone(((Worker) userDetails).getPhoneNumber())
-                                .companyId(((Worker) userDetails).getCompanyId())
-                                .storeId(((Worker) userDetails).getStoreId())
+                                .companyId(userDetails.getUsername())
+                                .storeId(userDetails.getUsername())
                                 .build()
-                )
-                .build();
+                ).build();
     }
 
     @Override
-    public ApiResponse changePassword(ChangePasswordRequest changePasswordRequest) {
+    public ApiResponse<WorkerInfoResponse> changePassword(ChangePasswordRequest changePasswordRequest) {
         // check if the worker exists
         Worker worker = workerRepository.findById(changePasswordRequest.getId()).orElseThrow(
                 () -> new ResourceNotFoundException(
@@ -172,7 +194,7 @@ public class AuthServiceImpl implements AuthService {
         // save the worker
         workerRepository.save(worker);
         // return the response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Password changed successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -191,7 +213,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ApiResponse changeEmail(ChangeEmailRequest changeEmailRequest) {
+    public ApiResponse<WorkerInfoResponse> changeEmail(ChangeEmailRequest changeEmailRequest) {
         // check if the worker exists
         Worker worker = workerRepository.findById(changeEmailRequest.getId()).orElseThrow(
                 () -> new ResourceNotFoundException(
@@ -213,8 +235,11 @@ public class AuthServiceImpl implements AuthService {
         worker.setEmail(changeEmailRequest.getEmail());
         // save the worker
         workerRepository.save(worker);
+        // set email verification token
+        String token = UUID.randomUUID().toString();
+        worker.setEmailVerificationToken(token);
         // return the response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Email changed successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -225,6 +250,7 @@ public class AuthServiceImpl implements AuthService {
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
                                 .phone(worker.getPhoneNumber())
+                                .token(token)
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
@@ -233,7 +259,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ApiResponse changeUsername(ChangeUsernameRequest changeUsernameRequest) {
+    public ApiResponse<WorkerInfoResponse> changeUsername(ChangeUsernameRequest changeUsernameRequest) {
         // check if the worker exists
         Worker worker = workerRepository.findById(changeUsernameRequest.getId()).orElseThrow(
                 () -> new ResourceNotFoundException(
@@ -261,7 +287,7 @@ public class AuthServiceImpl implements AuthService {
         // logout the worker
 
         // return the response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Username changed successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -280,7 +306,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ApiResponse changePhone(ChangePhoneRequest changePhoneRequest) {
+    public ApiResponse<WorkerInfoResponse> changePhone(ChangePhoneRequest changePhoneRequest) {
         // check if the worker exists
         Worker worker = workerRepository.findById(changePhoneRequest.getId()).orElseThrow(
                 () -> new ResourceNotFoundException(
@@ -303,7 +329,7 @@ public class AuthServiceImpl implements AuthService {
         // save the worker
         workerRepository.save(worker);
         // return the response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Phone number changed successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -336,115 +362,12 @@ public class AuthServiceImpl implements AuthService {
         return passwordEncoder.matches(password, worker.getPassword());
     }
 
-    @Override
-    public ApiResponse registerWorker(RegisterWorkerRequest registerWorkerRequest) {
-        // check if username is already taken
-        if (workerRepository.existsByUsername(registerWorkerRequest.getUsername())) {
-            throw new ValidationException(
-                    "username",
-                    registerWorkerRequest.getUsername(),
-                    "Username is already taken"
-            );
-        }
-        // check if email is already taken
-        if (workerRepository.existsByEmail(registerWorkerRequest.getEmail())) {
-            throw new ValidationException(
-                    "email",
-                    registerWorkerRequest.getEmail(),
-                    "Email is already taken"
-            );
-        }
-        // check if store exists
-        if (!storeService.existsById(registerWorkerRequest.getStoreId())) {
-            throw new ResourceNotFoundException(
-                    "Store",
-                    "id",
-                    registerWorkerRequest.getStoreId(),
-                    "Store not found"
-            );
-        }
-        // create worker
-        Worker worker = Worker.builder()
-                .username(registerWorkerRequest.getUsername())
-                .email(registerWorkerRequest.getEmail())
-                .password(passwordEncoder.encode(registerWorkerRequest.getPassword()))
-                .storeId(registerWorkerRequest.getStoreId())
-                .roles(
-                        List.of(
-                                Role.ROLE_WORKER
-                        )
-                )
-                .companyId(storeService.getCompanyId(registerWorkerRequest.getStoreId()))
-                .managerId(storeService.getManagerId(registerWorkerRequest.getStoreId()))
-                .enabled(false)
-                .build();
 
-        // create verification token
-        String token = UUID.randomUUID().toString();
-        worker.setEmailVerificationToken(token);
-        // save
-        workerRepository.save(worker);
-
-        // return response
-        return ApiResponse.builder()
-                .message("Worker registered successfully")
-                .status(HttpStatus.CREATED.getReasonPhrase())
-                .statusCode(HttpStatus.CREATED.value())
-                .timestamp(LocalDateTime.now())
-                .data(
-                        Map.of(
-                                "verificationToken", token,
-                                "worker", WorkerInfoResponse.builder()
-                                        .id(worker.getId())
-                                        .username(worker.getUsername())
-                                        .email(worker.getEmail())
-                                        .phone(worker.getPhoneNumber())
-                                        .companyId(worker.getCompanyId())
-                                        .storeId(worker.getStoreId())
-                                        .build()
-                        )
-                )
-                .build();
-    }
 
     @Override
-    public ApiResponse verifyEmail(String token, String email, String id, String username) {
+    public ApiResponse<WorkerInfoResponse> verifyEmail(String token, String email, String id, String username) {
         // check if worker exists
-        Worker worker = null;
-        if (email != null) {
-            worker = workerRepository.findByEmail(email).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "email",
-                            email,
-                            "Worker not found"
-                    )
-            );
-        } else if (id != null) {
-            worker = workerRepository.findById(id).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "id",
-                            id,
-                            "Worker not found"
-                    )
-            );
-        } else if (username != null) {
-            worker = workerRepository.findByUsername(username).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "username",
-                            username,
-                            "Worker not found"
-                    )
-            );
-        }else {
-            throw new ValidationException(
-                    "email, id, username",
-                    null,
-                    "One of them is required"
-            );
-        }
+        Worker worker = getWorker(email, id, username);
         // check if the token is correct
         if (!worker.getEmailVerificationToken().equals(token)) {
             throw new ValidationException(
@@ -459,7 +382,7 @@ public class AuthServiceImpl implements AuthService {
         // save
         workerRepository.save(worker);
         // return response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Email verified successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -477,8 +400,45 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    private Worker getWorker(String email, String id, String username) {
+        if (email != null) {
+            return  workerRepository.findByEmail(email).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "email",
+                            email,
+                            "Worker not found"
+                    )
+            );
+        } else if (id != null) {
+            return workerRepository.findById(id).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "id",
+                            id,
+                            "Worker not found"
+                    )
+            );
+        } else if (username != null) {
+            return workerRepository.findByUsername(username).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Worker",
+                            "username",
+                            username,
+                            "Worker not found"
+                    )
+            );
+        } else {
+            throw new ValidationException(
+                    "email, id, username",
+                    null,
+                    "One of them is required"
+            );
+        }
+    }
+
     @Override
-    public ApiResponse forgotPassword(String email) {
+    public ApiResponse<WorkerInfoResponse> forgotPassword(String email) {
         Worker worker = workerRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException(
                         "Worker",
@@ -500,21 +460,28 @@ public class AuthServiceImpl implements AuthService {
         // save token
         workerRepository.save(worker);
         // create response with token
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Password reset token created successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .timestamp(LocalDateTime.now())
                 .data(
-                        Map.of(
-                                "resetToken", token
-                        )
+                        WorkerInfoResponse.builder()
+                                .id(worker.getId())
+                                .username(worker.getUsername())
+                                .email(worker.getEmail())
+                                .phone(worker.getPhoneNumber())
+                                .companyId(worker.getCompanyId())
+                                .storeId(worker.getStoreId())
+                                .token(token)
+                                .build()
+
                 )
                 .build();
     }
 
     @Override
-    public ApiResponse resetPassword(String token, String id, String username, String email, ResetPasswordRequest password) {
+    public ApiResponse<WorkerInfoResponse> resetPassword(String token, String id, String username, String email, ResetPasswordRequest password) {
         // check if the password is valid
         if (password.getConfirmPassword() == null || !password.getNewPassword().equals(password.getConfirmPassword())) {
             throw new ValidationException(
@@ -524,41 +491,7 @@ public class AuthServiceImpl implements AuthService {
             );
         }
         // check if worker exists
-        Worker worker = null;
-        if (email != null) {
-            worker = workerRepository.findByEmail(email).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "email",
-                            email,
-                            "Worker not found"
-                    )
-            );
-        } else if (id != null) {
-            worker = workerRepository.findById(id).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "id",
-                            id,
-                            "Worker not found"
-                    )
-            );
-        } else if (username != null) {
-            worker = workerRepository.findByUsername(username).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "username",
-                            username,
-                            "Worker not found"
-                    )
-            );
-        }else {
-            throw new ValidationException(
-                    "email, id, username",
-                    null,
-                    "One of them is required"
-            );
-        }
+        Worker worker = getWorker(email, id, username);
         // check if the token is correct
         if (!worker.getPasswordResetToken().equals(token)) {
             throw new ValidationException(
@@ -573,7 +506,7 @@ public class AuthServiceImpl implements AuthService {
         // save
         workerRepository.save(worker);
         // return response
-        return ApiResponse.builder()
+        return ApiResponse.<WorkerInfoResponse>builder()
                 .message("Password reset successfully")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
@@ -584,6 +517,107 @@ public class AuthServiceImpl implements AuthService {
                                 .username(worker.getUsername())
                                 .email(worker.getEmail())
                                 .phone(worker.getPhoneNumber())
+                                .companyId(worker.getCompanyId())
+                                .storeId(worker.getStoreId())
+                                .build()
+                )
+                .build();
+    }
+
+    @Override
+    public ApiResponse<WorkerInfoResponse> registerWorker(RegisterWorkerRequest registerWorkerRequest, Worker authenticatedUser) {
+        // if user is admin and company id is null then throw exception and tell user to create company first
+        // if user is admin and company id is not null but store id in request is null then throw exception and tell user to provide store id
+        if (authenticatedUser.getRoles().contains(Role.ROLE_ADMIN)) {
+            if (authenticatedUser.getCompanyId() == null) {
+                throw new ValidationException(
+                        "companyId",
+                        null,
+                        "No company found, create a company first"
+                );
+            }
+            if (registerWorkerRequest.getStoreId() == null) {
+                throw new ValidationException(
+                        "storeId",
+                        null,
+                        "Provide store id, Create a store if you have no store"
+                );
+            }
+        }
+        // if user is manager and company id is null then throw exception and tell user this is illegal operation
+        // if user is manager and company id is not null but user store id is null then throw exception and tell user this is illegal operation
+        if (authenticatedUser.getRoles().contains(Role.ROLE_MANAGER)) {
+            if (authenticatedUser.getCompanyId() == null) {
+                throw new InvalidOperationException(
+                        "Creating worker",
+                        "You are not allowed at any company"
+                );
+            }
+            if (authenticatedUser.getStoreId() == null) {
+                throw new InvalidOperationException(
+                        "Creating worker",
+                        "You are not allowed at any store"
+                );
+            }
+        }
+        // TODO: check if the store exists and is in the same company
+        // check store exists and is in the same company
+//        if (registerWorkerRequest.getStoreId() != null) {
+//            if (!storeService.isStoreOfCompany(registerWorkerRequest.getStoreId(), authenticatedUser.getCompanyId())) {
+//                throw new InvalidOperationException(
+//                        "Creating worker",
+//                        "Store is not in your company"
+//                );
+//            }
+//        }
+        // check if the username is already taken
+        if (workerRepository.existsByUsername(registerWorkerRequest.getUsername())) {
+            throw new ValidationException(
+                    "username",
+                    registerWorkerRequest.getUsername(),
+                    "Username is already taken"
+            );
+        }
+        // check if the email is already taken
+        if (workerRepository.existsByEmail(registerWorkerRequest.getEmail())) {
+            throw new ValidationException(
+                    "email",
+                    registerWorkerRequest.getEmail(),
+                    "Email is already taken"
+            );
+        }
+        // create a new worker
+        Worker worker = Worker.builder()
+                .username(registerWorkerRequest.getUsername())
+                .email(registerWorkerRequest.getEmail())
+                .password(passwordEncoder.encode(registerWorkerRequest.getPassword()))
+                .roles(
+                        List.of(
+                                Role.ROLE_WORKER
+                        )
+                )
+                .enabled(false)
+                .companyId(authenticatedUser.getCompanyId())
+                .storeId(registerWorkerRequest.getStoreId() != null ? registerWorkerRequest.getStoreId() : authenticatedUser.getStoreId())
+                .build();
+        // create verification token
+        String token = UUID.randomUUID().toString();
+        worker.setEmailVerificationToken(token);
+        // save the worker
+        workerRepository.save(worker);
+        // return the response
+        return ApiResponse.<WorkerInfoResponse>builder()
+                .message("Worker registered successfully")
+                .status(HttpStatus.CREATED.getReasonPhrase())
+                .statusCode(HttpStatus.CREATED.value())
+                .timestamp(LocalDateTime.now())
+                .data(
+                        WorkerInfoResponse.builder()
+                                .id(worker.getId())
+                                .username(worker.getUsername())
+                                .email(worker.getEmail())
+                                .phone(worker.getPhoneNumber())
+                                .token(token)
                                 .companyId(worker.getCompanyId())
                                 .storeId(worker.getStoreId())
                                 .build()
