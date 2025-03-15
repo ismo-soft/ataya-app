@@ -13,17 +13,14 @@ public class ChangePasswordRequest {
 
     @NotNull(message = "oldPassword is required")
     @NotEmpty(message = "can not be empty")
-    @JsonProperty("old-password")
     private String oldPassword;
 
     @NotNull(message = "newPassword is required")
     @NotEmpty(message = "can not be empty")
-    @JsonProperty("new-password")
     private String newPassword;
 
     @NotNull(message = "confirmPassword is required")
     @NotEmpty(message = "can not be empty")
-    @JsonProperty("confirm-password")
     private String confirmPassword;
 
 }

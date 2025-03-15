@@ -13,7 +13,6 @@ public class ChangePhoneRequest {
 
     @NotNull(message = "phoneNumber is required")
     @NotEmpty(message = "can not be empty")
-    @JsonProperty("phone-number")
     private String phoneNumber;
 
     @NotNull(message = "password is required")

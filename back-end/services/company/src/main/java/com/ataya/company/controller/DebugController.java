@@ -48,12 +48,6 @@ public class DebugController {
                     """
     )
     public CompanyInfoResponse getMyCompany(@AuthenticationPrincipal Worker authenticatedPrincipal) {
-        System.out.println("DEBUG: getMyCompany");
-        System.out.println("DEBUG: authenticatedPrincipal: " + authenticatedPrincipal);
-        System.out.println("DEBUG: authenticatedPrincipal.getCompanyId(): " + authenticatedPrincipal.getCompanyId());
-        System.out.println("DEBUG: authenticationPrincipal.Username " + authenticatedPrincipal.getUsername());
-        System.out.println("DEBUG: authenticationPrincipal.getRoles() " + authenticatedPrincipal.getRoles());
-        System.out.println("DEBUG: authenticationPrincipal.getId() " + authenticatedPrincipal.getId());
         return companyService.getCompany(authenticatedPrincipal.getCompanyId());
     }
 

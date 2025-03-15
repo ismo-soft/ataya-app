@@ -7,6 +7,5 @@ import lombok.Getter;
 public class UpdateWorkerRequest {
     private String name;
     private String surname;
-    @JsonProperty("profile-picture")
     private String profilePicture;
 }

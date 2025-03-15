@@ -19,6 +19,5 @@ public class RegisterWorkerRequest {
     @NotEmpty(message = "can not be empty")
     private String password;
 
-    @JsonProperty("store-id")
     private String StoreId;
 }

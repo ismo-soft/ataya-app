@@ -188,7 +188,14 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public CompanyInfoResponse getCompany(String companyId) {
-        System.out.println("companyId = " + companyId);
+        if (companyId == null) {
+            throw new ResourceNotFoundException(
+                    "Company",
+                    "id",
+                    null,
+                    "Company id is required"
+            );
+        }
         // Get company by companyId
         Company company = companyRepository.findById(companyId).orElseThrow(
                 () -> new ResourceNotFoundException(

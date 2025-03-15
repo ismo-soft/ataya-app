@@ -13,8 +13,6 @@ public class ChangeUsernameRequest {
 
     @NotNull(message = "newUsername is required")
     @NotEmpty(message = "can not be empty")
-
-    @JsonProperty("new-username")
     private String newUsername;
 
     @NotNull(message = "password is required")

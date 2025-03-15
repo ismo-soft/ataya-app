@@ -16,7 +16,6 @@ public class CreateCompanyRequest {
     @NotEmpty(message = "name is required")
     private String name;
 
-    @JsonProperty("registration-number")
     @NotNull(message = "registration number is required")
     @NotEmpty(message = "registration number is required")
     private String registrationNumber;
