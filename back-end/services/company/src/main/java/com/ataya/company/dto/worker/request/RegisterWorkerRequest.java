@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class RegisterWorkerRequest {
     @NotNull(message = "username is required")
     @NotEmpty(message = "can not be empty")
@@ -19,5 +21,5 @@ public class RegisterWorkerRequest {
     @NotEmpty(message = "can not be empty")
     private String password;
 
-    private String StoreId;
+    private String storeId;
 }

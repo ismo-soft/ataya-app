@@ -11,6 +11,7 @@ import com.ataya.company.repo.WorkerRepository;
 import com.ataya.company.security.jwt.JwtService;
 import com.ataya.company.security.service.UserDetailsServiceImpl;
 import com.ataya.company.service.AuthService;
+import com.ataya.company.service.StoreService;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,11 +34,14 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
 
-    public AuthServiceImpl(WorkerRepository workerRepository, PasswordEncoder passwordEncoder, UserDetailsServiceImpl userDetailsService, JwtService jwtService) {
+    private final StoreService storeService;
+
+    public AuthServiceImpl(WorkerRepository workerRepository, PasswordEncoder passwordEncoder, UserDetailsServiceImpl userDetailsService, JwtService jwtService, StoreService storeService) {
         this.workerRepository = workerRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
+        this.storeService = storeService;
     }
 
 
@@ -532,21 +536,21 @@ public class AuthServiceImpl implements AuthService {
             if (authenticatedUser.getCompanyId() == null) {
                 throw new ValidationException(
                         "companyId",
-                        null,
+                        "null",
                         "No company found, create a company first"
                 );
             }
             if (registerWorkerRequest.getStoreId() == null) {
                 throw new ValidationException(
                         "storeId",
-                        null,
+                        "null",
                         "Provide store id, Create a store if you have no store"
                 );
             }
         }
         // if user is manager and company id is null then throw exception and tell user this is illegal operation
         // if user is manager and company id is not null but user store id is null then throw exception and tell user this is illegal operation
-        if (authenticatedUser.getRoles().contains(Role.ROLE_MANAGER)) {
+        if (authenticatedUser.getRoles().contains(Role.ROLE_MANAGER) && !authenticatedUser.getRoles().contains(Role.ROLE_ADMIN)) {
             if (authenticatedUser.getCompanyId() == null) {
                 throw new InvalidOperationException(
                         "Creating worker",
@@ -560,16 +564,17 @@ public class AuthServiceImpl implements AuthService {
                 );
             }
         }
-        // TODO: check if the store exists and is in the same company
         // check store exists and is in the same company
-//        if (registerWorkerRequest.getStoreId() != null) {
-//            if (!storeService.isStoreOfCompany(registerWorkerRequest.getStoreId(), authenticatedUser.getCompanyId())) {
-//                throw new InvalidOperationException(
-//                        "Creating worker",
-//                        "Store is not in your company"
-//                );
-//            }
-//        }
+        if (registerWorkerRequest.getStoreId() != null) {
+            if (!storeService.isStoreOfCompany(registerWorkerRequest.getStoreId(), authenticatedUser.getCompanyId())) {
+                throw new ResourceNotFoundException(
+                        "Store",
+                        "id",
+                        registerWorkerRequest.getStoreId(),
+                        "Store not found or not in the same company"
+                );
+            }
+        }
         // check if the username is already taken
         if (workerRepository.existsByUsername(registerWorkerRequest.getUsername())) {
             throw new ValidationException(

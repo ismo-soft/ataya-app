@@ -241,4 +241,9 @@ public class StoreServiceImpl implements StoreService {
                 .data(storeMapper.toStoreInfoResponse(store))
                 .build();
     }
+
+    @Override
+    public boolean isStoreOfCompany(String storeId, String companyId) {
+        return storeRepository.existsByIdAndCompanyId(storeId, companyId);
+    }
 }

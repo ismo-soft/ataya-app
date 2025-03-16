@@ -232,18 +232,9 @@ public class AuthController {
                         - available to manager to register worker to his/her store. \s
                     """
     )
-//    @PreAuthorize(
-//            "hasRole('ROLE_ADMIN') " +
-//                    "or" +
-//                    "(" +
-//                        "hasRole('ROLE_MANAGER') " +
-//                        "and " +
-//                        "@workerServiceImpl.isManagerOfStore(" +
-//                            "authentication.principal.id," +
-//                            "#registerWorkerRequest.storeId" +
-//                        ")" +
-//                    ")"
-//    )
+    @PreAuthorize(
+            "hasAnyRole('ADMIN','MANAGER')"
+    )
     public ResponseEntity<ApiResponse<WorkerInfoResponse>> registerWorker(@RequestBody RegisterWorkerRequest registerWorkerRequest, @AuthenticationPrincipal Worker authenticatedUser) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerWorker(registerWorkerRequest, authenticatedUser));
     }

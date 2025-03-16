@@ -19,4 +19,6 @@ public interface StoreService {
     ApiResponse<List<StoreInfoResponse>> getStores(String name, String storeCode, String description, String status, int page, int size, String companyId);
 
     ApiResponse<StoreInfoResponse> updateStore(String storeId, @Valid UpdateStoreRequest updateStoreRequest);
+
+    boolean isStoreOfCompany(String storeId, String companyId);
 }
