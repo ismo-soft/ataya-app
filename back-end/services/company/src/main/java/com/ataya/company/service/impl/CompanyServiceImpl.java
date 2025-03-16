@@ -10,9 +10,11 @@ import com.ataya.company.exception.Custom.DuplicateResourceException;
 import com.ataya.company.exception.Custom.ResourceNotFoundException;
 import com.ataya.company.mapper.CompanyMapper;
 import com.ataya.company.model.Company;
+import com.ataya.company.model.Store;
 import com.ataya.company.model.Worker;
 import com.ataya.company.repo.CompanyRepository;
 import com.ataya.company.service.CompanyService;
+import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -32,10 +34,13 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final WorkerService workerService;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, CompanyMapper companyMapper, WorkerService workerService) {
+    private final StoreService storeService;
+
+    public CompanyServiceImpl(CompanyRepository companyRepository, CompanyMapper companyMapper, WorkerService workerService, StoreService storeService) {
         this.companyRepository = companyRepository;
         this.companyMapper = companyMapper;
         this.workerService = workerService;
+        this.storeService = storeService;
     }
 
     @Override
@@ -206,5 +211,14 @@ public class CompanyServiceImpl implements CompanyService {
                 )
         );
         return companyMapper.toCompanyInfoResponse(company);
+    }
+
+    @Override
+    public boolean isStoreInCompany(String storeId, String companyId) {
+        Store store = storeService.getStoreById(storeId);
+        if (store == null) {
+            return false;
+        }
+        return store.getCompanyId().equals(companyId);
     }
 }

@@ -16,7 +16,7 @@ public class ApiResponse<T> {
     private LocalDateTime timestamp;
     private int page;
     private int size;
-    private int total;
+    private long total;
     private int totalPages;
     private T data;
 }

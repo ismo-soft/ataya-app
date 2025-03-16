@@ -18,4 +18,6 @@ public interface CompanyService {
     ApiResponse<CompanyInfoResponse> setCompanyAddressId(String companyId, String addressId);
 
     CompanyInfoResponse getCompany(String companyId);
+
+    boolean isStoreInCompany(String storeId, String companyId);
 }

@@ -42,7 +42,7 @@ public class CompanyController {
                     """
     )
     public ResponseEntity<ApiResponse<CompanyInfoResponse>> createCompany(@Valid @RequestBody CreateCompanyRequest createCompanyRequest, @AuthenticationPrincipal Worker authenticatedPrincipal) {
-        return ResponseEntity.ok(companyService.createCompany(createCompanyRequest,authenticatedPrincipal.getId()));
+        return ResponseEntity.status(201).body(companyService.createCompany(createCompanyRequest, authenticatedPrincipal.getId()));
     }
 
     // get company info
