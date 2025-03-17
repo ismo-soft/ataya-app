@@ -2,6 +2,7 @@ package com.ataya.company.service.impl;
 
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
+import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.enums.SocialMediaPlatforms;
 import com.ataya.company.enums.StoreStatus;
@@ -11,6 +12,7 @@ import com.ataya.company.mapper.StoreMapper;
 import com.ataya.company.model.Store;
 import com.ataya.company.repo.StoreRepository;
 import com.ataya.company.service.StoreService;
+import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,15 +27,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ataya.company.service.impl.CommonService.addCriteria;
+
 @Service
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
+    private final WorkerService workerService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper) {
+    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService) {
         this.storeRepository = storeRepository;
         this.storeMapper = storeMapper;
+        this.workerService = workerService;
     }
 
     @Override
@@ -44,19 +50,7 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public ApiResponse<StoreInfoResponse> createStore(CreateStoreRequest createStoreRequest, String companyId) {
         // validate social media if not null
-        Map<SocialMediaPlatforms,String> socialMedia = new HashMap<>();
-        if (createStoreRequest.getSocialMedia() != null) {
-            for (String key : createStoreRequest.getSocialMedia().keySet()) {
-                if(!SocialMediaPlatforms.isPlatformExists(key)) {
-                    throw new ValidationException(
-                            "Social Media",
-                            key,
-                            "Invalid social media platform"
-                    );
-                }
-                socialMedia.put(SocialMediaPlatforms.getPlatform(key),createStoreRequest.getSocialMedia().get(key));
-            }
-        }
+        Map<SocialMediaPlatforms, String> socialMedia = stringToSocialMedia(createStoreRequest.getSocialMedia());
 
 
         // check if company id is not null
@@ -94,6 +88,21 @@ public class StoreServiceImpl implements StoreService {
                 .build();
     }
 
+    private Map<SocialMediaPlatforms, String> stringToSocialMedia(Map<String, String> socialMedia) {
+        if (socialMedia == null) {
+            return new HashMap<>();
+        }
+        Map<SocialMediaPlatforms, String> socialMediaMap = new HashMap<>();
+        for (Map.Entry<String, String> entry : socialMedia.entrySet()) {
+            if (SocialMediaPlatforms.isPlatformExists(entry.getKey())) {
+                socialMediaMap.put(SocialMediaPlatforms.getPlatform(entry.getKey()), entry.getValue());
+            } else {
+                throw new ValidationException("Social Media", entry.getKey(), "Invalid social media platform");
+            }
+        }
+        return socialMediaMap;
+    }
+
     @Override
     public ApiResponse<StoreInfoResponse> getStoreInfo(String storeId) {
         Store store = this.getStoreById(storeId);
@@ -116,70 +125,23 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public ApiResponse<List<StoreInfoResponse>> getStores(String name, String storeCode, String description, String status, int page, int size, String companyId) {
-        List<String> names = name == null ? null : List.of(name.split(","));
-        List<String> storeCodes = storeCode == null ? null : List.of(storeCode.split(","));
-        List<String> descriptions = description == null ? null : List.of(description.split(","));
-        // convert status to list of StoreStatus if not null and be sure that all values are valid
-        List<StoreStatus> statuses = new ArrayList<>();
-        if (status != null) {
-            for (String s : status.split(",")) {
-                if (StoreStatus.isStatusExist(status)) {
-                    statuses.add(StoreStatus.getStatus(s));
-                } else {
-                    throw new ValidationException(
-                            "Status",
-                            status,
-                            "Invalid status"
-                    );
-                }
-            }
-        }
-        List<String> companyIds = companyId == null ? null : List.of(companyId.split(","));
-
         List<Criteria> criteriaList = new ArrayList<>();
-        if (names != null && !names.isEmpty()) {
-            List<Criteria> nameCriteriaList = names.stream()
-                    .map(str -> Criteria.where("name").regex(".*" + str + ".*", "i"))
-                    .toList();
-            criteriaList.add(new Criteria().orOperator(nameCriteriaList.toArray(new Criteria[0])));
-        }
-        if (storeCodes != null && !storeCodes.isEmpty()) {
-            List<Criteria> storeCodeCriteriaList = storeCodes.stream()
-                    .map(str -> Criteria.where("storeCode").regex(".*" + str + ".*", "i"))
-                    .toList();
-            criteriaList.add(new Criteria().orOperator(storeCodeCriteriaList.toArray(new Criteria[0])));
-        }
-        if (descriptions != null && !descriptions.isEmpty()) {
-            List<Criteria> descriptionCriteriaList = descriptions.stream()
-                    .map(str -> Criteria.where("description").regex(".*" + str + ".*", "i"))
-                    .toList();
-            criteriaList.add(new Criteria().orOperator(descriptionCriteriaList.toArray(new Criteria[0])));
-        }
-        if (!statuses.isEmpty()) {
-            List<Criteria> statusCriteriaList = statuses.stream()
-                    .map(statusObject -> Criteria.where("status").is(statusObject))
-                    .toList();
-            criteriaList.add(new Criteria().orOperator(statusCriteriaList.toArray(new Criteria[0])));
-        }
-        if (companyIds != null && !companyIds.isEmpty()) {
-            List<Criteria> companyIdCriteriaList = companyIds.stream()
-                    .map(str -> Criteria.where("companyId").is(str))
-                    .toList();
-            criteriaList.add(new Criteria().orOperator(companyIdCriteriaList.toArray(new Criteria[0])));
-        }
-
+        addCriteria(criteriaList, "name", name);
+        addCriteria(criteriaList, "storeCode", storeCode);
+        addCriteria(criteriaList, "description", description);
+        addStatusCriteria(criteriaList, status);
+        addCriteria(criteriaList, "companyId", companyId);
 
         Query query = new Query();
         if (!criteriaList.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        long totalCount = storeRepository.countBookByCriteria(query);
+        long totalCount = storeRepository.countStoreByQuery(query);
         PageRequest pageRequest = PageRequest.of(page, size);
         query.with(pageRequest);
-        List<Store> stores = storeRepository.findStoresByCriteria(query);
+        List<Store> stores = storeRepository.findStoresByQuery(query);
 
-        // return store info response
         return ApiResponse.<List<StoreInfoResponse>>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.OK.getReasonPhrase())
@@ -193,22 +155,28 @@ public class StoreServiceImpl implements StoreService {
                 .build();
     }
 
+    private void addStatusCriteria(List<Criteria> criteriaList, String status) {
+        if (status != null && !status.isEmpty()) {
+            List<StoreStatus> statuses = new ArrayList<>();
+            for (String s : status.split(",")) {
+                if (StoreStatus.isStatusExist(s)) {
+                    statuses.add(StoreStatus.getStatus(s));
+                } else {
+                    throw new ValidationException("Status", s, "Invalid status");
+                }
+            }
+            List<Criteria> statusCriteriaList = statuses.stream()
+                    .map(statusObject -> Criteria.where("status").is(statusObject))
+                    .toList();
+            criteriaList.add(new Criteria().orOperator(statusCriteriaList.toArray(new Criteria[0])));
+        }
+    }
+
     @Override
     public ApiResponse<StoreInfoResponse> updateStore(String storeId, UpdateStoreRequest updateStoreRequest) {
         // validate Social Media if not null
-        Map<SocialMediaPlatforms,String> socialMedia = new HashMap<>();
-        if (updateStoreRequest.getSocialMedia() != null) {
-            for (String key : updateStoreRequest.getSocialMedia().keySet()) {
-                if(!SocialMediaPlatforms.isPlatformExists(key)) {
-                    throw new ValidationException(
-                            "Social Media",
-                            key,
-                            "Invalid social media platform"
-                    );
-                }
-                socialMedia.put(SocialMediaPlatforms.getPlatform(key),updateStoreRequest.getSocialMedia().get(key));
-            }
-        }
+        Map<SocialMediaPlatforms, String> socialMedia = stringToSocialMedia(updateStoreRequest.getSocialMedia());
+
 
         Store store = this.getStoreById(storeId);
         if (store == null) {
@@ -245,5 +213,19 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public boolean isStoreOfCompany(String storeId, String companyId) {
         return storeRepository.existsByIdAndCompanyId(storeId, companyId);
+    }
+
+    @Override
+    public ApiResponse<StoreDetailsResponse> getStoreWorkers(String storeId, String name, String surname, String username, String email, String phone, int page, int size) {
+        StoreDetailsResponse storeDetailsResponse = new StoreDetailsResponse();
+        storeDetailsResponse.setStore(getStoreInfo(storeId).getData());
+        storeDetailsResponse.setWorkers(workerService.getWorkers(name,surname,username,email,phone,null,storeId,false,page,size).getData());
+        return ApiResponse.<StoreDetailsResponse>builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .message("Store workers retrieved successfully")
+                .data(storeDetailsResponse)
+                .build();
     }
 }

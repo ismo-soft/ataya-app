@@ -16,12 +16,12 @@ public class CustomStoreRepositoryImpl implements CustomStoreRepository {
     }
 
     @Override
-    public List<Store> findStoresByCriteria(Query query) {
+    public List<Store> findStoresByQuery(Query query) {
         return mongoTemplate.find(query, Store.class);
     }
 
     @Override
-    public long countBookByCriteria(Query query) {
+    public long countStoreByQuery(Query query) {
         return mongoTemplate.count(query, Store.class);
     }
 

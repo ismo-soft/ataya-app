@@ -2,6 +2,7 @@ package com.ataya.company.service;
 
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
+import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.model.Store;
 import com.ataya.company.util.ApiResponse;
@@ -21,4 +22,6 @@ public interface StoreService {
     ApiResponse<StoreInfoResponse> updateStore(String storeId, @Valid UpdateStoreRequest updateStoreRequest);
 
     boolean isStoreOfCompany(String storeId, String companyId);
+
+    ApiResponse<StoreDetailsResponse> getStoreWorkers(String storeId, String name, String surname, String username, String email, String phone, int page, int size);
 }

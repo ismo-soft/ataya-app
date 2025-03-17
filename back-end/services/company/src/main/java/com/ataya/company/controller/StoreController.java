@@ -1,9 +1,8 @@
 package com.ataya.company.controller;
 
-
-import com.ataya.company.dto.company.CreateCompanyRequest;
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
+import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.exception.Custom.ValidationException;
 import com.ataya.company.model.Worker;
@@ -104,7 +103,28 @@ public class StoreController {
     }
 
     // get store workers
-    // TODO: implement get store workers
+    @GetMapping("/{storeId}/workers")
+    @PreAuthorize("(hasRole('ADMIN') and @storeSecurity.hasAccess(#storeId, authentication.principal.companyId)) or ((hasRole('MANAGER')) and #storeId == authentication.principal.storeId)")
+    @Operation(
+            summary = "Get store workers",
+            description = """
+                    This endpoint is used to get store workers. \s
+                    ### Authentication: bearer token is required. \s
+                    ### Authorizations: user with role ADMIN or MANAGER can get store workers. \s
+                    """
+    )
+    public ApiResponse<StoreDetailsResponse> getStoreWorkers(
+            @PathVariable String storeId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String surname,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+            ) {
+        return storeService.getStoreWorkers(storeId, name, surname, username, email, phone, page, size);
+    }
 
     // get store products
     // TODO: implement get store products
