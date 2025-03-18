@@ -6,11 +6,12 @@ import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.enums.SocialMediaPlatforms;
 import com.ataya.company.enums.StoreStatus;
-import com.ataya.company.exception.Custom.ResourceNotFoundException;
-import com.ataya.company.exception.Custom.ValidationException;
+import com.ataya.company.exception.custom.ResourceNotFoundException;
+import com.ataya.company.exception.custom.ValidationException;
 import com.ataya.company.mapper.StoreMapper;
 import com.ataya.company.model.Store;
 import com.ataya.company.repo.StoreRepository;
+import com.ataya.company.service.FileService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
@@ -19,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,11 +37,13 @@ public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
     private final WorkerService workerService;
+    private final FileService fileService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService) {
+    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService) {
         this.storeRepository = storeRepository;
         this.storeMapper = storeMapper;
         this.workerService = workerService;
+        this.fileService = fileService;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public ApiResponse<StoreInfoResponse> createStore(CreateStoreRequest createStoreRequest, String companyId) {
+    public ApiResponse<StoreInfoResponse> createStore(CreateStoreRequest createStoreRequest, String companyId, MultipartFile profilePicture) {
         // validate social media if not null
         Map<SocialMediaPlatforms, String> socialMedia = stringToSocialMedia(createStoreRequest.getSocialMedia());
 
@@ -66,7 +70,6 @@ public class StoreServiceImpl implements StoreService {
                 .name(createStoreRequest.getName())
                 .storeCode(createStoreRequest.getStoreCode())
                 .description(createStoreRequest.getDescription())
-                .profilePicture(createStoreRequest.getProfilePicture())
                 .email(createStoreRequest.getEmail())
                 .phoneNumber(createStoreRequest.getPhoneNumber())
                 .website(createStoreRequest.getWebsite())
@@ -77,6 +80,9 @@ public class StoreServiceImpl implements StoreService {
                 .creationDate(LocalDate.now())
                 .build();
         // save store
+        store = storeRepository.save(store);
+        String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
+        store.setProfilePicture(profilePictureFile);
         storeRepository.save(store);
         // return store info response
         return ApiResponse.<StoreInfoResponse>builder()
@@ -173,7 +179,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public ApiResponse<StoreInfoResponse> updateStore(String storeId, UpdateStoreRequest updateStoreRequest) {
+    public ApiResponse<StoreInfoResponse> updateStore(String storeId, UpdateStoreRequest updateStoreRequest, MultipartFile profilePicture) {
         // validate Social Media if not null
         Map<SocialMediaPlatforms, String> socialMedia = stringToSocialMedia(updateStoreRequest.getSocialMedia());
 
@@ -187,11 +193,12 @@ public class StoreServiceImpl implements StoreService {
                     "Store not found"
             );
         }
+        String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
         // update store
         store.setName(updateStoreRequest.getName());
         store.setStoreCode(updateStoreRequest.getStoreCode());
         store.setDescription(updateStoreRequest.getDescription());
-        store.setProfilePicture(updateStoreRequest.getProfilePicture());
+        store.setProfilePicture(profilePictureFile);
         store.setEmail(updateStoreRequest.getEmail());
         store.setPhoneNumber(updateStoreRequest.getPhoneNumber());
         store.setWebsite(updateStoreRequest.getWebsite());

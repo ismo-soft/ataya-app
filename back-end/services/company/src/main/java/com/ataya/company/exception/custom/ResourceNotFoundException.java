@@ -1,11 +1,8 @@
-package com.ataya.company.exception.Custom;
+package com.ataya.company.exception.custom;
 
 import com.ataya.company.enums.ErrorCode;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Getter

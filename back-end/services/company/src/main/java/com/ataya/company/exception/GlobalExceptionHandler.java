@@ -1,6 +1,6 @@
 package com.ataya.company.exception;
 
-import com.ataya.company.exception.Custom.*;
+import com.ataya.company.exception.custom.*;
 import com.ataya.company.util.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -120,5 +120,33 @@ public class GlobalExceptionHandler {
                 .additionalDetails(errors)
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleFileNotFoundException(FileNotFoundException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .httpcode(HttpStatus.NOT_FOUND.value())
+                .httpstatus(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .timestamp(LocalDateTime.now().format(DATE_TIME_FORMATTER))
+                .path(((ServletWebRequest) request).getRequest().getRequestURI())
+                .method(((ServletWebRequest) request).getRequest().getMethod())
+                .additionalDetails(ex.getAdditionalDetails())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ErrorResponse> handleFileStorageException(FileStorageException ex, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .message(ex.getMessage())
+                .httpcode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .httpstatus(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .timestamp(LocalDateTime.now().format(DATE_TIME_FORMATTER))
+                .path(((ServletWebRequest) request).getRequest().getRequestURI())
+                .method(((ServletWebRequest) request).getRequest().getMethod())
+                .additionalDetails(ex.getAdditionalDetails())
+                .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }

@@ -4,6 +4,7 @@ import com.ataya.company.dto.worker.request.UpdateWorkerRequest;
 import com.ataya.company.dto.worker.response.WorkerInfoResponse;
 import com.ataya.company.model.Worker;
 import com.ataya.company.util.ApiResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface WorkerService {
 
     void saveWorker(Worker worker);
 
-    ApiResponse<WorkerInfoResponse> updateWorker(String id, UpdateWorkerRequest updateWorkerRequest);
+    ApiResponse<WorkerInfoResponse> updateWorker(String id, UpdateWorkerRequest updateWorkerRequest, MultipartFile profilePicture);
 
     ApiResponse<WorkerInfoResponse> getWorker(String id);
 

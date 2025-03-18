@@ -16,11 +16,8 @@ public class UpdateCompanyRequest {
     private String address;
     private LocalDate dateOfIncorporation;
     private String website;
-    private String logo;
     private String description;
-    private String coverPhoto;
-    private String profilePhoto;
-    private Map<SocialMediaPlatforms, String> socialMedia;
+    private Map<String, String> socialMedia;
     private String legalEntityType;
     private String sector;
     private String industry;

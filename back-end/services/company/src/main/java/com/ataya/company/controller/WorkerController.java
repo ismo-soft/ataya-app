@@ -9,10 +9,12 @@ import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -49,7 +51,7 @@ public class WorkerController {
     }
 
     // update worker
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(
             "#id == authentication.principal.id"
     )
@@ -61,8 +63,8 @@ public class WorkerController {
                     ### Authorizations: user can update his own information. \s
                     """
     )
-    public ResponseEntity<ApiResponse<WorkerInfoResponse>> updateWorker(@PathVariable String id, @RequestBody UpdateWorkerRequest updateWorkerRequest) {
-        return ResponseEntity.status(200).body(workerService.updateWorker(id, updateWorkerRequest));
+    public ResponseEntity<ApiResponse<WorkerInfoResponse>> updateWorker(@PathVariable String id, @RequestPart UpdateWorkerRequest updateWorkerRequest, @RequestPart(required = false,value = "profilePicture") MultipartFile profilePicture) {
+        return ResponseEntity.status(200).body(workerService.updateWorker(id, updateWorkerRequest, profilePicture));
     }
 
     // get workers

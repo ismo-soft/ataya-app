@@ -17,7 +17,7 @@ public class StoreInfoResponse {
     private String name;
     private String storeCode;
     private String description;
-    private String profilePhoto;
+    private String profilePicture;
     private String email;
     private String phoneNumber;
     private String website;

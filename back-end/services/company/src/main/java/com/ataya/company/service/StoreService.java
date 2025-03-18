@@ -7,19 +7,20 @@ import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.model.Store;
 import com.ataya.company.util.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface StoreService {
     Store getStoreById(String storeId);
 
-    ApiResponse<StoreInfoResponse> createStore(@Valid CreateStoreRequest createStoreRequest, String companyId);
+    ApiResponse<StoreInfoResponse> createStore(@Valid CreateStoreRequest createStoreRequest, String companyId, MultipartFile profilePhoto);
 
     ApiResponse<StoreInfoResponse> getStoreInfo(String storeId);
 
     ApiResponse<List<StoreInfoResponse>> getStores(String name, String storeCode, String description, String status, int page, int size, String companyId);
 
-    ApiResponse<StoreInfoResponse> updateStore(String storeId, @Valid UpdateStoreRequest updateStoreRequest);
+    ApiResponse<StoreInfoResponse> updateStore(String storeId, @Valid UpdateStoreRequest updateStoreRequest, MultipartFile profilePhoto);
 
     boolean isStoreOfCompany(String storeId, String companyId);
 

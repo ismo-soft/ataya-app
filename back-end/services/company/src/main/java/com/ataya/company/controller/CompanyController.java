@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/company")
@@ -75,8 +76,8 @@ public class CompanyController {
                     ### Authorizations: user with role SUPER_ADMIN can update company information
                     """
     )
-    public ResponseEntity<ApiResponse<CompanyInfoResponse>> updateCompany(@PathVariable String companyId, @RequestBody UpdateCompanyRequest updateCompanyRequest) {
-        return ResponseEntity.ok(companyService.updateCompany(companyId, updateCompanyRequest));
+    public ResponseEntity<ApiResponse<CompanyInfoResponse>> updateCompany(@PathVariable String companyId, @RequestPart UpdateCompanyRequest updateCompanyRequest, @RequestPart(required = false) MultipartFile logo, @RequestPart(required = false) MultipartFile coverPhoto, @RequestPart(required = false) MultipartFile profilePhoto) {
+        return ResponseEntity.ok(companyService.updateCompany(companyId, updateCompanyRequest, logo, coverPhoto, profilePhoto));
     }
 
     // view company details

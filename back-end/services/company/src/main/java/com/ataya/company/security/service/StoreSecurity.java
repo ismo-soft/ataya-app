@@ -1,6 +1,6 @@
 package com.ataya.company.security.service;
 
-import com.ataya.company.exception.Custom.InvalidOperationException;
+import com.ataya.company.exception.custom.InvalidOperationException;
 import com.ataya.company.service.CompanyService;
 import org.springframework.stereotype.Service;
 

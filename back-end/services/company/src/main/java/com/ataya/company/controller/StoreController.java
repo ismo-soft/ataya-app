@@ -4,7 +4,7 @@ import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
 import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
-import com.ataya.company.exception.Custom.ValidationException;
+import com.ataya.company.exception.custom.ValidationException;
 import com.ataya.company.model.Worker;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.util.ApiResponse;
@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -38,8 +39,8 @@ public class StoreController {
                     ### Authorizations: user with role ADMIN can create store. \s
                     """
     )
-    public ResponseEntity<ApiResponse<StoreInfoResponse>> createStore(@Valid @RequestBody CreateStoreRequest createStoreRequest, @AuthenticationPrincipal Worker owner) {
-        return ResponseEntity.status(201).body(storeService.createStore(createStoreRequest, owner.getCompanyId()));
+    public ResponseEntity<ApiResponse<StoreInfoResponse>> createStore(@Valid @RequestPart CreateStoreRequest createStoreRequest, @AuthenticationPrincipal Worker owner, @RequestPart(required = false) MultipartFile profilePhoto) {
+        return ResponseEntity.status(201).body(storeService.createStore(createStoreRequest, owner.getCompanyId(), profilePhoto));
     }
 
     // get store info
@@ -53,8 +54,8 @@ public class StoreController {
                     ### Authorizations: authenticated user can get store info. \s
                     """
     )
-    public ApiResponse<StoreInfoResponse> getStoreInfo(@PathVariable String storeId) {
-        return storeService.getStoreInfo(storeId);
+    public ResponseEntity<ApiResponse<StoreInfoResponse>> getStoreInfo(@PathVariable String storeId) {
+        return ResponseEntity.ok(storeService.getStoreInfo(storeId));
     }
 
     // get stores
@@ -68,7 +69,7 @@ public class StoreController {
                     ### Authorizations: user with role ADMIN can get stores. \s
                     """
     )
-    public ApiResponse<List<StoreInfoResponse>> getStores(
+    public ResponseEntity<ApiResponse<List<StoreInfoResponse>>> getStores(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String storeCode,
             @RequestParam(required = false) String description,
@@ -84,7 +85,7 @@ public class StoreController {
                     "User does not belong to any company"
             );
         }
-        return storeService.getStores(name, storeCode, description, status, page, size, owner.getCompanyId());
+        return ResponseEntity.ok(storeService.getStores(name, storeCode, description, status, page, size, owner.getCompanyId()));
     }
 
     // update store
@@ -98,8 +99,8 @@ public class StoreController {
                     ### Authorizations: user with role ADMIN or MANAGER can update store. \s
                     """
     )
-    public ApiResponse<StoreInfoResponse> updateStore(@PathVariable String storeId, @Valid @RequestBody UpdateStoreRequest updateStoreRequest) {
-        return storeService.updateStore(storeId, updateStoreRequest);
+    public ResponseEntity<ApiResponse<StoreInfoResponse>> updateStore(@PathVariable String storeId, @Valid @RequestPart UpdateStoreRequest updateStoreRequest, @RequestPart(required = false) MultipartFile profilePhoto) {
+        return ResponseEntity.ok(storeService.updateStore(storeId, updateStoreRequest, profilePhoto));
     }
 
     // get store workers
@@ -113,7 +114,7 @@ public class StoreController {
                     ### Authorizations: user with role ADMIN or MANAGER can get store workers. \s
                     """
     )
-    public ApiResponse<StoreDetailsResponse> getStoreWorkers(
+    public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreWorkers(
             @PathVariable String storeId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String surname,
@@ -123,7 +124,7 @@ public class StoreController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
             ) {
-        return storeService.getStoreWorkers(storeId, name, surname, username, email, phone, page, size);
+        return ResponseEntity.ok(storeService.getStoreWorkers(storeId, name, surname, username, email, phone, page, size));
     }
 
     // get store products

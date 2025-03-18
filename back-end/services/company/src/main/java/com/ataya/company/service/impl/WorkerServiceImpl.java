@@ -3,9 +3,10 @@ package com.ataya.company.service.impl;
 import com.ataya.company.dto.worker.request.UpdateWorkerRequest;
 import com.ataya.company.dto.worker.response.WorkerInfoResponse;
 import com.ataya.company.enums.Role;
-import com.ataya.company.exception.Custom.ResourceNotFoundException;
+import com.ataya.company.exception.custom.ResourceNotFoundException;
 import com.ataya.company.model.Worker;
 import com.ataya.company.repo.WorkerRepository;
+import com.ataya.company.service.FileService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.data.domain.PageRequest;
@@ -13,11 +14,11 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.ataya.company.service.impl.CommonService.addCriteria;
 
@@ -26,8 +27,11 @@ public class WorkerServiceImpl implements WorkerService {
 
     private final WorkerRepository workerRepository;
 
-    public WorkerServiceImpl(WorkerRepository workerRepository) {
+    private final FileService fileService;
+
+    public WorkerServiceImpl(WorkerRepository workerRepository, FileService fileService) {
         this.workerRepository = workerRepository;
+        this.fileService = fileService;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class WorkerServiceImpl implements WorkerService {
     }
 
     @Override
-    public ApiResponse<WorkerInfoResponse> updateWorker(String id, UpdateWorkerRequest updateWorkerRequest) {
+    public ApiResponse<WorkerInfoResponse> updateWorker(String id, UpdateWorkerRequest updateWorkerRequest, MultipartFile profilePicture) {
         // get worker by id
         Worker worker = getWorkerById(id);
         List<Role> roles = new ArrayList<>();
@@ -57,9 +61,10 @@ public class WorkerServiceImpl implements WorkerService {
             roles.add(Role.getRole(role));
         }
         // update worker
+        String profilePicturePath = fileService.saveImageFile(profilePicture, "worker", "profile", worker.getId());
         worker.setName(updateWorkerRequest.getName());
         worker.setSurname(updateWorkerRequest.getSurname());
-        worker.setProfilePicture(updateWorkerRequest.getProfilePicture());
+        worker.setProfilePicture(profilePicturePath);
         worker.getRoles().clear();
         worker.getRoles().addAll(roles);
         workerRepository.save(worker);
