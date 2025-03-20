@@ -4,6 +4,9 @@ import com.ataya.company.dto.company.CompanyDetailsResponse;
 import com.ataya.company.dto.company.CompanyInfoResponse;
 import com.ataya.company.dto.company.CreateCompanyRequest;
 import com.ataya.company.dto.company.UpdateCompanyRequest;
+import com.ataya.company.dto.product.ProductInfoResponse;
+import com.ataya.company.dto.store.response.StoreInfoResponse;
+import com.ataya.company.dto.worker.response.WorkerInfoResponse;
 import com.ataya.company.enums.SocialMediaPlatforms;
 import com.ataya.company.exception.custom.DuplicateResourceException;
 import com.ataya.company.exception.custom.ResourceNotFoundException;
@@ -12,10 +15,7 @@ import com.ataya.company.model.Company;
 import com.ataya.company.model.Store;
 import com.ataya.company.model.Worker;
 import com.ataya.company.repo.CompanyRepository;
-import com.ataya.company.service.CompanyService;
-import com.ataya.company.service.FileService;
-import com.ataya.company.service.StoreService;
-import com.ataya.company.service.WorkerService;
+import com.ataya.company.service.*;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -39,12 +40,15 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final FileService fileService;
 
-    public CompanyServiceImpl(CompanyRepository companyRepository, CompanyMapper companyMapper, WorkerService workerService, StoreService storeService, FileService fileService) {
+    private final ProductService productService;
+
+    public CompanyServiceImpl(CompanyRepository companyRepository, CompanyMapper companyMapper, WorkerService workerService, StoreService storeService, FileService fileService, ProductService productService) {
         this.companyRepository = companyRepository;
         this.companyMapper = companyMapper;
         this.workerService = workerService;
         this.storeService = storeService;
         this.fileService = fileService;
+        this.productService = productService;
     }
 
     @Override
@@ -172,10 +176,50 @@ public class CompanyServiceImpl implements CompanyService {
                         "Company not found with id " + companyId
                 )
         );
-        // TODO: get company workers from worker service
-//        List<WorkerInfoResponse> workers = workerService.getCompanyWorkers(companyId);
-        // TODO: get company stores from store service
-//        List<StoreInfoResponse> stores = storeService.getCompanyStores(companyId);
+
+        List<StoreInfoResponse> stores = storeService.getStores(
+                null,
+                null,
+                null,
+                null,
+                0,
+                0,
+                companyId
+        ).getData();
+        List<WorkerInfoResponse> workers = workerService.getWorkers(
+                null,
+                null,
+                null,
+                null,
+                null,
+                companyId,
+                null,
+                false,
+                0,
+                0
+        ).getData();
+        List<ProductInfoResponse> products = productService.getProducts(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                0,
+                0,
+                companyId,
+                null
+        ).getData();
 
         return ApiResponse.<CompanyDetailsResponse>builder()
                 .message("Company details retrieved successfully")
@@ -185,8 +229,12 @@ public class CompanyServiceImpl implements CompanyService {
                 .data(
                         CompanyDetailsResponse.builder()
                         .company(companyMapper.toCompanyInfoResponse(company))
-                        .workers(null)
-                        .stores(null)
+                        .workers(workers)
+                        .stores(stores)
+                        .products(products)
+                        .productCount(products.size())
+                        .storeCount(stores.size())
+                        .workerCount(workers.size())
                         .build()
                 )
                 .build();

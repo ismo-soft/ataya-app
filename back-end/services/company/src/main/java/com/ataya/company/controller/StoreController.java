@@ -6,6 +6,7 @@ import com.ataya.company.dto.store.response.StoreDetailsResponse;
 import com.ataya.company.dto.store.response.StoreInfoResponse;
 import com.ataya.company.exception.custom.ValidationException;
 import com.ataya.company.model.Worker;
+import com.ataya.company.service.ProductService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.util.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ public class StoreController {
     public StoreController(StoreService storeService) {
         this.storeService = storeService;
     }
+
 
     // create store
     @PostMapping("/create")
@@ -104,7 +106,7 @@ public class StoreController {
     }
 
     // get store workers
-    @GetMapping("/{storeId}/workers")
+    @GetMapping("/workers")
     @PreAuthorize("(hasRole('ADMIN') and @storeSecurity.hasAccess(#storeId, authentication.principal.companyId)) or ((hasRole('MANAGER')) and #storeId == authentication.principal.storeId)")
     @Operation(
             summary = "Get store workers",
@@ -115,21 +117,70 @@ public class StoreController {
                     """
     )
     public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreWorkers(
-            @PathVariable String storeId,
+            @RequestParam(required = false) String storeId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String surname,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String phone,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal Worker authenticatedPrincipal
             ) {
-        return ResponseEntity.ok(storeService.getStoreWorkers(storeId, name, surname, username, email, phone, page, size));
+        String id = storeId == null ? authenticatedPrincipal.getStoreId() : storeId;
+        return ResponseEntity.ok(storeService.getStoreWorkers(id, name, surname, username, email, phone, page, size));
     }
 
     // get store products
-    // TODO: implement get store products
+    @GetMapping("/products")
+    @PreAuthorize("(hasRole('ADMIN') and @storeSecurity.hasAccess(#storeId, authentication.principal.companyId)) or ((hasRole('MANAGER')) and #storeId == authentication.principal.storeId)")
+    @Operation(
+            summary = "Get store products",
+            description = """
+                    This endpoint is used to get store products. \s
+                    ### Authentication: bearer token is required. \s
+                    ### Authorizations: user with role ADMIN or MANAGER can get store products. \s
+                    """
+    )
+    public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreProducts(
+            @RequestParam(required = false) String storeId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String sku,
+            @RequestParam(required = false) String barcode,
+            @RequestParam(required = false) String upc,
+            @RequestParam(required = false) String ean,
+            @RequestParam(required = false) String serialNumber,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String price,
+            @RequestParam(required = false) String discount,
+            @RequestParam(required = false) String discountRate,
+            @RequestParam(required = false) String isDiscounted,
+            @RequestParam(required = false) String discountPrice,
+            @RequestParam(required = false) String sz,
+            @RequestParam(required = false) String weight,
+            @RequestParam(required = false) String color,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal Worker authenticatedPrincipal
+    ) {
+        String id = storeId == null ? authenticatedPrincipal.getStoreId() : storeId;
+        return ResponseEntity.ok(storeService.getStoreProducts(id, name, sku, barcode, upc, ean, serialNumber, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size));
+    }
 
     // get store details
-    // TODO: implement get store details
+    @GetMapping("/details")
+    @PreAuthorize("hasAnyRole('WORKER','MANAGER')")
+    @Operation(
+            summary = "Get store details",
+            description = """
+                    This endpoint is used to get store details. \s
+                    ### Authentication: bearer token is required. \s
+                    ### Authorizations: user with role WORKER or MANAGER can get store details. \s
+                    """
+    )
+    public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreDetails(@AuthenticationPrincipal Worker authenticatedPrincipal, @RequestParam(required = false) String storeId) {
+        String id = storeId == null ? authenticatedPrincipal.getStoreId() : storeId;
+        return ResponseEntity.ok(storeService.getStoreDetails(id));
+    }
 }

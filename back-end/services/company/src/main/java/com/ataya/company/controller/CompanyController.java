@@ -81,7 +81,7 @@ public class CompanyController {
     }
 
     // view company details
-    @GetMapping("/details/{companyId}")
+    @GetMapping("/details")
     @PreAuthorize(
             "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
                     "#companyId == authentication.principal.companyId"
@@ -94,8 +94,8 @@ public class CompanyController {
                     ### Authorizations: user with role SUPER_ADMIN or ADMIN can view company details. \s
                     """
     )
-    public ResponseEntity<ApiResponse<CompanyDetailsResponse>> getCompanyDetails(@PathVariable String companyId) {
-        return ResponseEntity.ok(companyService.getCompanyDetails(companyId));
+    public ResponseEntity<ApiResponse<CompanyDetailsResponse>> getCompanyDetails(@AuthenticationPrincipal Worker user) {
+        return ResponseEntity.ok(companyService.getCompanyDetails(user.getCompanyId()));
     }
 
     // set company address

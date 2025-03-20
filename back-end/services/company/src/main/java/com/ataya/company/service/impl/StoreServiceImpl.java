@@ -12,6 +12,7 @@ import com.ataya.company.mapper.StoreMapper;
 import com.ataya.company.model.Store;
 import com.ataya.company.repo.StoreRepository;
 import com.ataya.company.service.FileService;
+import com.ataya.company.service.ProductService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
@@ -38,12 +39,14 @@ public class StoreServiceImpl implements StoreService {
     private final StoreMapper storeMapper;
     private final WorkerService workerService;
     private final FileService fileService;
+    private final ProductService productService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService) {
+    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService, ProductService productService) {
         this.storeRepository = storeRepository;
         this.storeMapper = storeMapper;
         this.workerService = workerService;
         this.fileService = fileService;
+        this.productService = productService;
     }
 
     @Override
@@ -227,12 +230,45 @@ public class StoreServiceImpl implements StoreService {
         StoreDetailsResponse storeDetailsResponse = new StoreDetailsResponse();
         storeDetailsResponse.setStore(getStoreInfo(storeId).getData());
         storeDetailsResponse.setWorkers(workerService.getWorkers(name,surname,username,email,phone,null,storeId,false,page,size).getData());
+        storeDetailsResponse.setWorkerCount(storeDetailsResponse.getWorkers().size());
         return ApiResponse.<StoreDetailsResponse>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .message("Store workers retrieved successfully")
                 .data(storeDetailsResponse)
+                .build();
+    }
+
+    @Override
+    public ApiResponse<StoreDetailsResponse> getStoreProducts(String storeId, String name, String sku, String barcode, String upc, String ean, String serialNumber, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size) {
+        StoreDetailsResponse response = new StoreDetailsResponse();
+        response.setStore(getStoreInfo(storeId).getData());
+        response.setProducts(productService.getProducts(name, sku, barcode, upc, ean, serialNumber, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size,null, storeId).getData());
+        response.setProductCount(response.getProducts().size());
+        return ApiResponse.<StoreDetailsResponse>builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .message("Store products retrieved successfully")
+                .data(response)
+                .build();
+    }
+
+    @Override
+    public ApiResponse<StoreDetailsResponse> getStoreDetails(String storeId) {
+        StoreDetailsResponse response = new StoreDetailsResponse();
+        response.setStore(getStoreInfo(storeId).getData());
+        response.setWorkers(workerService.getWorkers(null,null,null,null,null,null,storeId,false,0,10).getData());
+        response.setProducts(productService.getProducts(null,null,null,null,null,null, null,null, null, null, null, null, null, null, null, null, 0, 10,null, storeId).getData());
+        response.setWorkerCount(response.getWorkers().size());
+        response.setProductCount(response.getProducts().size());
+        return ApiResponse.<StoreDetailsResponse>builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .message("Store details retrieved successfully")
+                .data(response)
                 .build();
     }
 }

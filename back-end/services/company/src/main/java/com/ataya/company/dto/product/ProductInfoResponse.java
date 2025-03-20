@@ -1,10 +1,8 @@
-package com.ataya.company.model;
+package com.ataya.company.dto.product;
 
 
 import com.ataya.company.enums.ProductCategory;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,9 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "product")
-public class Product {
-    @Id
+public class ProductInfoResponse {
     private String id;
     private String name;
     private String description;
@@ -25,8 +21,8 @@ public class Product {
     private String upc;
     private String ean;
     private String serialNumber;
-    private String brand;
     private ProductCategory category;
+    private String brand;
     private double price;
     private double discount;
     private double discountRate;
@@ -36,9 +32,6 @@ public class Product {
     private double weight;
     private String color;
     private List<String> images;
-    private String companyId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
 }
