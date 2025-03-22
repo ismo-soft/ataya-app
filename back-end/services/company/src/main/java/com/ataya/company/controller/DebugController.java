@@ -141,7 +141,6 @@ public class DebugController {
                 null,
                 null,
                 null,
-                null,
                 page,
                 size,
                 authenticatedPrincipal.getCompanyId(),

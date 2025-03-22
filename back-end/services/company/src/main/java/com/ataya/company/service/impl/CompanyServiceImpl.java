@@ -214,7 +214,6 @@ public class CompanyServiceImpl implements CompanyService {
                 null,
                 null,
                 null,
-                null,
                 0,
                 0,
                 companyId,
