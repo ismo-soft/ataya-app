@@ -24,7 +24,6 @@ public class Product {
     private String barcode;
     private String upc;
     private String ean;
-    private String serialNumber;
     private String brand;
     private ProductCategory category;
     private double price;

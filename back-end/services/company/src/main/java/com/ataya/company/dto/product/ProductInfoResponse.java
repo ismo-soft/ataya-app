@@ -20,7 +20,6 @@ public class ProductInfoResponse {
     private String barcode;
     private String upc;
     private String ean;
-    private String serialNumber;
     private ProductCategory category;
     private String brand;
     private double price;

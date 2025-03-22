@@ -60,7 +60,6 @@ public class ProductServiceImpl implements ProductService {
                 .barcode(createProductRequest.getBarcode())
                 .upc(createProductRequest.getUpc())
                 .ean(createProductRequest.getEan())
-                .serialNumber(createProductRequest.getSerialNumber())
                 .brand(createProductRequest.getBrand())
                 .category(category)
                 .price(createProductRequest.getPrice())
@@ -111,7 +110,6 @@ public class ProductServiceImpl implements ProductService {
         product.setBarcode(request.getBarcode());
         product.setUpc(request.getUpc());
         product.setEan(request.getEan());
-        product.setSerialNumber(request.getSerialNumber());
         product.setBrand(request.getBrand());
         product.setCategory(category);
         product.setPrice(request.getPrice());
@@ -137,14 +135,13 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public ApiResponse<List<ProductInfoResponse>> getProducts(String name, String sku, String barcode, String upc, String ean, String serialNumber, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size, String companyId, String storeId) {
+    public ApiResponse<List<ProductInfoResponse>> getProducts(String name, String sku, String barcode, String upc, String ean, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size, String companyId, String storeId) {
         List<Criteria> criteriaList = new ArrayList<>();
         addCriteria(criteriaList, "name", name);
         addCriteria(criteriaList, "sku", sku);
         addCriteria(criteriaList, "barcode", barcode);
         addCriteria(criteriaList, "upc", upc);
         addCriteria(criteriaList, "ean", ean);
-        addCriteria(criteriaList, "serialNumber", serialNumber);
         addCriteria(criteriaList, "brand", brand);
         addStatusCriteria(criteriaList, category);
         addCriteriaWithRange(criteriaList, "price", price);

@@ -73,7 +73,6 @@ public class ProductController {
             @RequestParam(required = false) String barcode,
             @RequestParam(required = false) String upc,
             @RequestParam(required = false) String ean,
-            @RequestParam(required = false) String serialNumber,
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String price,
@@ -88,7 +87,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker user
     ) {
-        return ResponseEntity.ok(productService.getProducts(name, sku, barcode, upc, ean, serialNumber, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size,user.getCompanyId(), user.getStoreId()));
+        return ResponseEntity.ok(productService.getProducts(name, sku, barcode, upc, ean, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size,user.getCompanyId(), user.getStoreId()));
     }
 
 

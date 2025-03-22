@@ -14,7 +14,6 @@ public class UpdateProductRequest {
     private String sku;
     private String upc;
     private String ean;
-    private String serialNumber;
     private String barcode;
     private String brand;
     private String category;
