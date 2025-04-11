@@ -370,16 +370,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse<WorkerInfoResponse> verifyEmail(String token, String email, String id, String username) {
-        // check if worker exists
-        Worker worker = getWorker(email, id, username);
-        // check if the token is correct
-        if (!worker.getEmailVerificationToken().equals(token)) {
-            throw new ValidationException(
-                    "token",
-                    token,
-                    "Token is incorrect"
-            );
-        }
+        Worker worker = workerRepository.findByEmailVerificationToken(token).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Worker",
+                        "emailVerificationToken",
+                        token,
+                        "Worker not found"
+                )
+        );
         // verify the email
         worker.setEnabled(true);
         worker.setEmailVerificationToken(null);
