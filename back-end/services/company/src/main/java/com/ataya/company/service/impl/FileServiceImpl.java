@@ -32,11 +32,11 @@ public class FileServiceImpl implements FileService {
             // get file extension
             String fileExtension = Objects.requireNonNull(mediaFile.getOriginalFilename()).substring(mediaFile.getOriginalFilename().lastIndexOf("."));
             String contentType = mediaFile.getContentType();
-            if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
-                throw new FileStorageException(
-                        name, category, mediaFile.getSize() + " bytes",fileExtension , "Invalid file type"
-                );
-            }
+//            if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
+//                throw new FileStorageException(
+//                        name, category, mediaFile.getSize() + " bytes",fileExtension , "Invalid file type"
+//                );
+//            }
             Path filePath = Paths.get(uploadDir + "/" + of + "/" + category + "/" + name + fileExtension);
             Files.createDirectories(filePath.getParent());
             Files.write(filePath, mediaFile.getBytes());
