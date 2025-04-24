@@ -22,4 +22,5 @@ public interface WorkerRepository extends MongoRepository<Worker, String>, Custo
 
     Optional<Worker> findByEmailVerificationToken(String phone);
 
+    Optional<Worker> findByEmailOrUsername(String email, String username);
 }

@@ -125,17 +125,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ApiResponse<WorkerInfoResponse> login(LoginRequest loginRequest) {
         String username = loginRequest.getUsername();
-        if (loginRequest.getEmail() != null && username == null) {
-            Worker worker = workerRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
-                    () -> new ResourceNotFoundException(
-                            "Worker",
-                            "email",
-                            loginRequest.getEmail(),
-                            "Worker not found"
-                    )
-            );
-            username = worker.getUsername();
-        }
+        Worker worker = workerRepository.findByEmailOrUsername(loginRequest.getEmail(),loginRequest.getUsername()).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Worker",
+                        "email",
+                        loginRequest.getEmail(),
+                        "Worker not found"
+                )
+        );
         // load user details
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         // check if the password is correct
@@ -168,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
                                 .email(userDetails.getUsername())
                                 .phone(userDetails.getUsername())
                                 .token(token)
-                                .companyId(userDetails.getUsername())
+                                .companyId(worker.getCompanyId())
                                 .storeId(userDetails.getUsername())
                                 .build()
                 ).build();
