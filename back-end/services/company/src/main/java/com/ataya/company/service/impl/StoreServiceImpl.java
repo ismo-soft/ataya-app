@@ -147,6 +147,10 @@ public class StoreServiceImpl implements StoreService {
         }
 
         long totalCount = storeRepository.countStoreByQuery(query);
+        if (size <= 0) {
+            // get all stores
+            size = totalCount == 0 ? 1 : (int) totalCount;
+        }
         PageRequest pageRequest = PageRequest.of(page, size);
         query.with(pageRequest);
         List<Store> stores = storeRepository.findStoresByQuery(query);

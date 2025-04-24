@@ -132,6 +132,9 @@ public class WorkerServiceImpl implements WorkerService {
         }
 
         long total = workerRepository.countWorkersByQuery(query);
+        if (size <= 0) {
+            size = total == 0 ? 1 : (int) total;
+        }
         PageRequest pageRequest = PageRequest.of(page, size);
         query.with(pageRequest);
         List<Worker> workers = workerRepository.findWorkersByQuery(query);

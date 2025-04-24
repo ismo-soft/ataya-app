@@ -64,6 +64,15 @@ public class CompanyServiceImpl implements CompanyService {
         }
         // get Worker by ownerId
         Worker owner = workerService.getWorkerById(ownerId);
+        // check if owner companyId is null
+        if (owner.getCompanyId() != null) {
+            throw new DuplicateResourceException(
+                    "Worker",
+                    "companyId",
+                    owner.getCompanyId(),
+                    "Worker with username " + owner.getUsername() + " already has a company"
+            );
+        }
         // create company
         Company company = Company.builder()
                 .name(createCompanyRequest.getName())
@@ -129,11 +138,28 @@ public class CompanyServiceImpl implements CompanyService {
             }
         }
 
+        String logoPath = null;
+        String coverPhotoPath = null;
+        String profilePhotoPath = null;
+        if (logo != null) {
+            if (!logo.isEmpty()) {
+                logoPath = fileService.saveImageFile(logo, "company", "logo", company.getId());
+                company.setLogo(logoPath);
+            }
+        }
+        if (coverPhoto != null) {
+            if (!coverPhoto.isEmpty()) {
+                coverPhotoPath = fileService.saveImageFile(coverPhoto, "company", "cover", company.getId());
+                company.setCoverPhoto(coverPhotoPath);
+            }
+        }
+        if (profilePhoto != null) {
+            if (!profilePhoto.isEmpty()) {
+                profilePhotoPath = fileService.saveImageFile(profilePhoto, "company", "profile", company.getId());
+                company.setProfilePhoto(profilePhotoPath);
+            }
+        }
 
-
-        String logoPath = fileService.saveImageFile(logo, "company", "logo", company.getId());
-        String coverPhotoPath = fileService.saveImageFile(coverPhoto, "company", "cover", company.getId());
-        String profilePhotoPath = fileService.saveImageFile(profilePhoto, "company", "profile", company.getId());
         // update company
         company.setName(updateCompanyRequest.getName());
         company.setPhoneNumber(updateCompanyRequest.getPhoneNumber());
@@ -147,7 +173,6 @@ public class CompanyServiceImpl implements CompanyService {
         company.setProfilePhoto(profilePhotoPath);
         company.setSocialMedia(socialMedia);
         company.setLegalEntityType(updateCompanyRequest.getLegalEntityType());
-        company.setRegistrationNumber(updateCompanyRequest.getRegistrationNumber());
         company.setTaxId(updateCompanyRequest.getTaxId());
         company.setCurrency(updateCompanyRequest.getCurrency());
         company.setIndustry(updateCompanyRequest.getIndustry());

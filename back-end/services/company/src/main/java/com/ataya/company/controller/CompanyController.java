@@ -45,10 +45,9 @@ public class CompanyController {
     }
 
     // get company info
-    @GetMapping("/profile/{companyId}")
+    @GetMapping("/profile")
     @PreAuthorize(
-            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
-                    "#companyId == authentication.principal.companyId"
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN'))"
     )
     @Operation(
             summary = "Get company information",
@@ -58,12 +57,12 @@ public class CompanyController {
                     ### Authorizations: user with role SUPER_ADMIN or ADMIN can get company information. \s
                     """
     )
-    public ResponseEntity<ApiResponse<CompanyInfoResponse>> getCompanyInfo(@PathVariable String companyId) {
-        return ResponseEntity.ok(companyService.getCompanyInfo(companyId));
+    public ResponseEntity<ApiResponse<CompanyInfoResponse>> getCompanyInfo(@AuthenticationPrincipal Worker user) {
+        return ResponseEntity.ok(companyService.getCompanyInfo(user.getCompanyId()));
     }
 
     // update company info
-    @PutMapping("/profile/{companyId}")
+    @PutMapping("/profile")
     @PreAuthorize(
             "hasRole('SUPER_ADMIN')"
     )
@@ -76,15 +75,14 @@ public class CompanyController {
                     ### Authorizations: user with role SUPER_ADMIN can update company information
                     """
     )
-    public ResponseEntity<ApiResponse<CompanyInfoResponse>> updateCompany(@PathVariable String companyId, @RequestPart UpdateCompanyRequest updateCompanyRequest, @RequestPart(required = false) MultipartFile logo, @RequestPart(required = false) MultipartFile coverPhoto, @RequestPart(required = false) MultipartFile profilePhoto) {
-        return ResponseEntity.ok(companyService.updateCompany(companyId, updateCompanyRequest, logo, coverPhoto, profilePhoto));
+    public ResponseEntity<ApiResponse<CompanyInfoResponse>> updateCompany(@AuthenticationPrincipal Worker user, @RequestPart UpdateCompanyRequest updateCompanyRequest, @RequestPart(required = false) MultipartFile logo, @RequestPart(required = false) MultipartFile coverPhoto, @RequestPart(required = false) MultipartFile profilePhoto) {
+        return ResponseEntity.ok(companyService.updateCompany(user.getCompanyId(), updateCompanyRequest, logo, coverPhoto, profilePhoto));
     }
 
     // view company details
     @GetMapping("/details")
     @PreAuthorize(
-            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
-                    "#companyId == authentication.principal.companyId"
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN'))"
     )
     @Operation(
             summary = "View company details",
@@ -99,10 +97,9 @@ public class CompanyController {
     }
 
     // set company address
-    @PutMapping("/address/{companyId}")
+    @PutMapping("/address")
     @PreAuthorize(
-            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN')) and" +
-                    "#companyId == authentication.principal.companyId"
+            "(hasRole('SUPER_ADMIN') or hasRole('ADMIN'))"
     )
     @Operation(
             summary = "Set company addressId",
@@ -112,8 +109,7 @@ public class CompanyController {
                     ### Authorizations: user with role SUPER_ADMIN or ADMIN can set company addressId. \s
                     """
     )
-    public ResponseEntity<ApiResponse<CompanyInfoResponse>> setCompanyAddressId(@PathVariable String companyId, @RequestParam String addressId) {
-        return ResponseEntity.ok(companyService.setCompanyAddressId(companyId, addressId));
+    public ResponseEntity<ApiResponse<CompanyInfoResponse>> setCompanyAddressId(@AuthenticationPrincipal Worker user, @RequestParam String addressId) {
+        return ResponseEntity.ok(companyService.setCompanyAddressId(user.getCompanyId(), addressId));
     }
-
 }

@@ -159,12 +159,18 @@ public class ProductServiceImpl implements ProductService {
         query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
 
         long total = productRepository.countProductByQuery(query);
+        if (size <= 0) {
+            size = total == 0 ? 1 : (int) total;
+        }
         PageRequest pageRequest = PageRequest.of(page, size);
         query.with(pageRequest);
         List<Product> products = productRepository.findProductsByQuery(query);
 
         return ApiResponse.<List<ProductInfoResponse>>builder()
                 .status(HttpStatus.OK.getReasonPhrase())
+                .total(total)
+                .page(page)
+                .size(size)
                 .statusCode(HttpStatus.OK.value())
                 .message("Products retrieved successfully")
                 .timestamp(LocalDateTime.now())
