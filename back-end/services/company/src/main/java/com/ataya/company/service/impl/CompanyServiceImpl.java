@@ -167,10 +167,16 @@ public class CompanyServiceImpl implements CompanyService {
         company.setAddress(updateCompanyRequest.getAddress());
         company.setDateOfIncorporation(updateCompanyRequest.getDateOfIncorporation());
         company.setWebsite(updateCompanyRequest.getWebsite());
-        company.setLogo(logoPath);
+        if (logoPath != null) {
+            company.setLogo(logoPath);
+        }
+        if (profilePhotoPath != null) {
+            company.setProfilePhoto(profilePhotoPath);
+        }
+        if (coverPhotoPath != null) {
+            company.setCoverPhoto(coverPhotoPath);
+        }
         company.setDescription(updateCompanyRequest.getDescription());
-        company.setCoverPhoto(coverPhotoPath);
-        company.setProfilePhoto(profilePhotoPath);
         company.setSocialMedia(socialMedia);
         company.setLegalEntityType(updateCompanyRequest.getLegalEntityType());
         company.setTaxId(updateCompanyRequest.getTaxId());
