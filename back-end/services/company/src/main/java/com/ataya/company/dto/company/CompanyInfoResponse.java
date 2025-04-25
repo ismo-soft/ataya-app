@@ -16,9 +16,9 @@ public class CompanyInfoResponse {
     private String id;
     private String name;
     private String email;
-    private String phone;
+    private String phoneNumber;
     private String registrationNumber;
-    private LocalDate dateOfRegistration;
+    private LocalDate dateOfIncorporation;
     private String website;
     private String logo;
     private String description;
