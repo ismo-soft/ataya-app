@@ -56,22 +56,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = Product.builder()
                 .name(createProductRequest.getName())
                 .description(createProductRequest.getDescription())
-                .sku(createProductRequest.getSku())
-                .barcode(createProductRequest.getBarcode())
-                .upc(createProductRequest.getUpc())
-                .ean(createProductRequest.getEan())
                 .brand(createProductRequest.getBrand())
                 .category(category)
-                .price(createProductRequest.getPrice())
                 .size(createProductRequest.getSize())
                 .weight(createProductRequest.getWeight())
                 .color(createProductRequest.getColor())
                 .companyId(user.getCompanyId())
-                .createdBy(user.getId())
+                .createdBy(user.getUsername())
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        checkDiscount(product,createProductRequest.getDiscount(),createProductRequest.getDiscountRate());
 
         product = productRepository.save(product);
         List<String> imageUrls = fileService.saveImageFiles(images, "product", user.getCompanyId(), product.getId());
@@ -106,20 +100,14 @@ public class ProductServiceImpl implements ProductService {
         }
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setSku(request.getSku());
-        product.setBarcode(request.getBarcode());
-        product.setUpc(request.getUpc());
-        product.setEan(request.getEan());
         product.setBrand(request.getBrand());
         product.setCategory(category);
-        product.setPrice(request.getPrice());
         product.setSize(request.getSize());
         product.setWeight(request.getWeight());
         product.setColor(request.getColor());
-        product.setUpdatedBy(worker.getId());
+        product.setUpdatedBy(worker.getUsername());
         product.setUpdatedAt(LocalDateTime.now());
 
-        checkDiscount(product,request.getDiscount(),request.getDiscountRate());
 
         List<String> imageUrls = fileService.saveImageFiles(images, "product", worker.getCompanyId(), product.getId());
         product.setImages(imageUrls);
@@ -135,23 +123,14 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public ApiResponse<List<ProductInfoResponse>> getProducts(String name, String sku, String barcode, String upc, String ean, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size, String companyId, String storeId) {
+    public ApiResponse<List<ProductInfoResponse>> getProducts(String name, String brand, String category, String sz, String weight, String color, int page, int size, String companyId, String storeId) {
         List<Criteria> criteriaList = new ArrayList<>();
         addCriteria(criteriaList, "name", name);
-        addCriteria(criteriaList, "sku", sku);
-        addCriteria(criteriaList, "barcode", barcode);
-        addCriteria(criteriaList, "upc", upc);
-        addCriteria(criteriaList, "ean", ean);
         addCriteria(criteriaList, "brand", brand);
         addStatusCriteria(criteriaList, category);
-        addCriteriaWithRange(criteriaList, "price", price);
-        addCriteriaWithRange(criteriaList, "discount", discount);
-        addCriteriaWithRange(criteriaList, "discountRate", discountRate);
-        addCriteriaWithRange(criteriaList, "discountPrice", discountPrice);
         addCriteria(criteriaList, "size", sz);
         addCriteria(criteriaList, "weight", weight);
         addCriteria(criteriaList, "color", color);
-        criteriaList.add(Criteria.where("isDiscounted").is(isDiscounted != null && isDiscounted.equals("1")));
         criteriaList.add(Criteria.where("companyId").is(companyId));
         criteriaList.add(Criteria.where("storeId").is(storeId));
 
@@ -243,38 +222,5 @@ public class ProductServiceImpl implements ProductService {
                                 .build()
                 )
                 .build();
-    }
-
-    private void setDiscount(Product product, double discount) {
-        if(discount > product.getPrice()) {
-            throw new InvalidOperationException("Product discount", "Discount cannot be greater than the price");
-        }
-        product.setDiscount(discount);
-        product.setDiscountRate((discount / product.getPrice()) * 100);
-        product.setDiscountPrice(product.getPrice() - discount);
-        product.setDiscounted(true);
-    }
-
-    private void setDiscountRate(Product product, double discountRate) {
-        if(discountRate > 100) {
-            throw new InvalidOperationException("Product discount rate", "Discount rate cannot be greater than 100");
-        }
-        product.setDiscountRate(discountRate);
-        product.setDiscount((discountRate / 100) * product.getPrice());
-        product.setDiscountPrice(product.getPrice() - product.getDiscount());
-        product.setDiscounted(true);
-    }
-
-    private void checkDiscount(Product product, double discount, double discountRate) {
-        if (discount != 0.0) {
-            setDiscount(product, discount);
-        } else if (discountRate != 0.0) {
-            setDiscountRate(product, discountRate);
-        } else {
-            product.setDiscount(0.0);
-            product.setDiscountRate(0.0);
-            product.setDiscountPrice(0.0);
-            product.setDiscounted(false);
-        }
     }
 }

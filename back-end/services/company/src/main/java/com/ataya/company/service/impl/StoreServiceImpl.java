@@ -248,7 +248,7 @@ public class StoreServiceImpl implements StoreService {
     public ApiResponse<StoreDetailsResponse> getStoreProducts(String storeId, String name, String sku, String barcode, String upc, String ean, String serialNumber, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size) {
         StoreDetailsResponse response = new StoreDetailsResponse();
         response.setStore(getStoreInfo(storeId).getData());
-        response.setProducts(productService.getProducts(name, sku, barcode, upc, ean, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size,null, storeId).getData());
+        response.setProducts(productService.getProducts(name, brand, category, sz, weight, color, page, size,null, storeId).getData());
         response.setProductCount(response.getProducts().size());
         return ApiResponse.<StoreDetailsResponse>builder()
                 .timestamp(LocalDateTime.now())
@@ -264,7 +264,7 @@ public class StoreServiceImpl implements StoreService {
         StoreDetailsResponse response = new StoreDetailsResponse();
         response.setStore(getStoreInfo(storeId).getData());
         response.setWorkers(workerService.getWorkers(null,null,null,null,null,null,storeId,false,0,10).getData());
-        response.setProducts(productService.getProducts(null,null,null,null,null, null,null, null, null, null, null, null, null, null, null, 0, 10,null, storeId).getData());
+        response.setProducts(productService.getProducts(null,null,null,null,null, null, 0, 10,null, storeId).getData());
         response.setWorkerCount(response.getWorkers().size());
         response.setProductCount(response.getProducts().size());
         return ApiResponse.<StoreDetailsResponse>builder()

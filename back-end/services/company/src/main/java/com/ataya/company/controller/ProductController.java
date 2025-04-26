@@ -87,7 +87,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker user
     ) {
-        return ResponseEntity.ok(productService.getProducts(name, sku, barcode, upc, ean, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size,user.getCompanyId(), user.getStoreId()));
+        return ResponseEntity.ok(productService.getProducts(name, brand, category, sz, weight, color, page, size,user.getCompanyId(), user.getStoreId()));
     }
 
 
