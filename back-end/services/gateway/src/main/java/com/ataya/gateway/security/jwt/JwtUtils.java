@@ -1,11 +1,10 @@
-package com.ataya.company.security.jwt;
+package com.ataya.gateway.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -16,7 +15,7 @@ import java.util.function.Function;
 
 @Service
 @Slf4j
-public class JwtService {
+public class JwtUtils {
 
     @Value("${ataya.app.jwt.secret}")
     private String secret;
@@ -64,38 +63,7 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        // inject roles
-        HashMap<String, Object> extractClaims = new HashMap<>();
-        extractClaims.put("roles", userDetails.getAuthorities());
-        return generateToken(extractClaims, userDetails);
-    }
-
-    public String generateToken(HashMap<String, Object> extractClaims, UserDetails userDetails) {
-        return buildToken(extractClaims, userDetails, expirationHours);
-    }
-
-    private String buildToken(HashMap<String, Object> extractClaims, UserDetails userDetails, long expirationHours) {
-        return Jwts.builder()
-                .setClaims(extractClaims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
-                .setExpiration(new java.util.Date(System.currentTimeMillis() + expirationHours * 60 * 60 * 1000))
-                .signWith(getSigningKey())
-                .compact();
-    }
-
-    public boolean isTokenValid(String jwt, UserDetails userDetails) {
-        try {
-            final String username = extractUsername(jwt);
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(jwt));
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("JWT token is invalid: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    private boolean isTokenExpired(String jwt) {
+    public boolean isTokenExpired(String jwt) {
         final Date expiration = extractExpiration(jwt);
         return expiration.before(new Date());
     }
@@ -118,5 +86,7 @@ public class JwtService {
     public Map<String, Object> getTokenClaims(String token) {
         return new HashMap<>(extractAllClaims(token));
     }
+
+
 
 }

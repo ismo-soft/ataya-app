@@ -20,4 +20,4 @@ ataya:
 server:
   port: 8092
 
-debug: true
+

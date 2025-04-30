@@ -5,7 +5,13 @@
     <file url="file://$PROJECT_DIR$/back-end/services/address/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/back-end/services/company-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/back-end/services/company/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/config-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/config/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/config_service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/back-end/services/contributor/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/discovery-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/discovery/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/back-end/services/gateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/back-end/services/inventory/src/main/java" charset="UTF-8" />
   </component>
 </project>

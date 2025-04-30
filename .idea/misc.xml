@@ -9,11 +9,19 @@
         <option value="$PROJECT_DIR$/back-end/services/address/pom.xml" />
         <option value="$PROJECT_DIR$/back-end/services/contributor/pom.xml" />
         <option value="$PROJECT_DIR$/back-end/services/inventory/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/discovery-service/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/config-service/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/config/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/discovery/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/config_service/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/gateway/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/back-end/services/company-service/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/config/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/config_service/pom.xml" />
       </set>
     </option>
   </component>
