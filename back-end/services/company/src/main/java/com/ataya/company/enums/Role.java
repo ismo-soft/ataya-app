@@ -27,6 +27,11 @@ public enum Role {
         return null;
     }
 
+    // to get the role as string
+    public static String getRoleAsString(Role role) {
+        return role.name();
+    }
+
     // check if the role is valid
     public static boolean isValidRole(String role) {
         return isRoleExist(role);

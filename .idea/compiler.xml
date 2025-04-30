@@ -31,6 +31,8 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="company-service" target="17" />
+      <module name="discovery" target="17" />
+      <module name="gateway" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
