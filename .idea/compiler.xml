@@ -7,8 +7,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="company" />
-        <module name="address" />
+        <module name="discovery" />
+        <module name="gateway" />
       </profile>
       <profile name="Annotation profile for contributor" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -27,12 +27,16 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="inventory" />
+        <module name="company" />
+        <module name="address" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="company-service" target="17" />
-      <module name="discovery" target="17" />
-      <module name="gateway" target="17" />
+      <module name="config" target="17" />
+      <module name="config-service" target="17" />
+      <module name="config_service" target="17" />
+      <module name="discovery-service" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -40,7 +44,13 @@
       <module name="address" options="-parameters" />
       <module name="company" options="-parameters" />
       <module name="company-service" options="-parameters" />
+      <module name="config" options="-parameters" />
+      <module name="config-service" options="-parameters" />
+      <module name="config_service" options="-parameters" />
       <module name="contributor" options="-parameters" />
+      <module name="discovery" options="-parameters" />
+      <module name="discovery-service" options="-parameters" />
+      <module name="gateway" options="-parameters" />
       <module name="inventory" options="-parameters" />
     </option>
   </component>
