@@ -7,7 +7,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="address" />
         <module name="discovery" />
         <module name="gateway" />
       </profile>
@@ -20,7 +19,7 @@
         </processorPath>
         <module name="contributor" />
       </profile>
-      <profile name="Annotation profile for company" enabled="true">
+      <profile name="Annotation profile for inventory" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -29,6 +28,7 @@
         </processorPath>
         <module name="inventory" />
         <module name="company" />
+        <module name="address" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
