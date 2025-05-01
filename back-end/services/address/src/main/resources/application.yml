@@ -26,5 +26,5 @@ ataya:
         score: 0.75
 
 server:
-  port: 8092
+  port: 8090
 

@@ -1,7 +1,6 @@
 server:
   port: 8080
 
-
 spring:
   application:
     name: gateway
@@ -15,6 +14,38 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+
+#      routes:
+#        - id: inventory
+#          uri: http://localhost:8092
+#          predicates:
+#            - Path=/inventory/**, /inventory/v3/api-docs, /inventory/swagger-ui.html, /inventory/swagger-ui/**
+#          filters:
+#            - RewritePath=/inventory(?<segment>/.*), $\\{segment}
+#
+#        - id: company
+#          uri: http://localhost:8091
+#          predicates:
+#            - Path=/company/**, /company/v3/api-docs, /company/swagger-ui.html, /company/swagger-ui/**
+#          filters:
+#            - RewritePath=/company(?<segment>/.*), $\\{segment}
+#
+#        # Dedicated route for Swagger endpoints with no auth
+#        - id: swagger-ui
+#          uri: lb://gateway
+#          predicates:
+#            - Path=/v3/api-docs/**, /swagger-ui/**, /swagger-ui.html
+#
+#        # Separate routes for specific service Swagger endpoints
+#        - id: service-swagger-docs
+#          uri: lb://gateway
+#          predicates:
+#            - Path=/*/v3/api-docs
+#
+#        - id: service-swagger-ui
+#          uri: lb://gateway
+#          predicates:
+#            - Path=/*/swagger-ui.html, /*/swagger-ui/**
 
 ataya:
   app:
