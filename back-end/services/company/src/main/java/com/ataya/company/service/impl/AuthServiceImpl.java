@@ -25,7 +25,6 @@ import java.util.UUID;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-
     private final WorkerRepository workerRepository;
 
     private final PasswordEncoder passwordEncoder;

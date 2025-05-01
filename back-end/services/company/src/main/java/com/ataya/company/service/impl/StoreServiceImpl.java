@@ -84,8 +84,11 @@ public class StoreServiceImpl implements StoreService {
                 .build();
         // save store
         store = storeRepository.save(store);
-        String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
-        store.setProfilePicture(profilePictureFile);
+        // save file if not null
+        if (profilePicture != null) {
+            String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
+            store.setProfilePicture(profilePictureFile);
+        }
         storeRepository.save(store);
         // return store info response
         return ApiResponse.<StoreInfoResponse>builder()
