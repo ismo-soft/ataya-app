@@ -1,6 +1,7 @@
 package com.ataya.inventory.controller;
 
 
+import com.ataya.inventory.model.User;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,13 +51,11 @@ public class DebugController {
 
     // whoami endpoint
     @GetMapping("/whoami")
-    public String whoami(@AuthenticationPrincipal String username) {
-        return "Hello " + username;
+    public String whoami(@AuthenticationPrincipal User user) {
+        return """
+                Hi, my name is %s,
+                working at company with id %s which has store with id %s
+                """.formatted(user.getUsername(), user.getCompanyId(), user.getStoreId());
     }
 
-    // public endpoint to get all roles
-    @GetMapping("/public/hi")
-    public String getAllRoles() {
-        return "Hi There";
-    }
 }

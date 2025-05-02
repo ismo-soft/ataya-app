@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/company/product")
+@RequestMapping("/product")
 public class ProductController {
 
     private final ProductService productService;
@@ -68,21 +68,12 @@ public class ProductController {
                     """
     )
     public ResponseEntity<ApiResponse<List<ProductInfoResponse>>> getProducts(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String sku,
-            @RequestParam(required = false) String barcode,
-            @RequestParam(required = false) String upc,
-            @RequestParam(required = false) String ean,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String price,
-            @RequestParam(required = false) String discount,
-            @RequestParam(required = false) String discountRate,
-            @RequestParam(required = false) String isDiscounted,
-            @RequestParam(required = false) String discountPrice,
+            @RequestParam(required = false, name = "nm") String name,
+            @RequestParam(required = false, name = "bnd") String brand,
+            @RequestParam(required = false, name = "cgr") String category,
             @RequestParam(required = false) String sz,
-            @RequestParam(required = false) String weight,
-            @RequestParam(required = false) String color,
+            @RequestParam(required = false, name = "wgt") String weight,
+            @RequestParam(required = false, name = "clr") String color,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker user

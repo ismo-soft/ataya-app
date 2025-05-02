@@ -1,4 +1,4 @@
-package com.ataya.inventory.repository;
+package com.ataya.inventory.repo;
 
 import com.ataya.inventory.model.ProductItem;
 import org.springframework.data.mongodb.repository.MongoRepository;

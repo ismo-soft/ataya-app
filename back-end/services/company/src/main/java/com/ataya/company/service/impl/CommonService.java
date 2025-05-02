@@ -46,7 +46,6 @@ public class CommonService {
                 criteria.add(Criteria.where(field).gte(range[0]).lte(range[1]));
             }
         }
-
     }
 
     public CompanyInfoResponse getCompanyById(String companyId) {

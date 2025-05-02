@@ -1,11 +1,14 @@
 package com.ataya.company.security.jwt;
 
+import com.ataya.company.model.Worker;
+import com.ataya.company.repo.WorkerRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -18,11 +21,16 @@ import java.util.function.Function;
 @Slf4j
 public class JwtService {
 
+    private final WorkerRepository workerRepository;
     @Value("${ataya.app.jwt.secret}")
     private String secret;
 
     @Value("${ataya.app.jwt.expiration.hours}")
     private long expirationHours;
+
+    public JwtService(WorkerRepository workerRepository) {
+        this.workerRepository = workerRepository;
+    }
 
 
     public String extractUsername(String jwt) {
@@ -66,8 +74,22 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         // inject roles
+
         HashMap<String, Object> extractClaims = new HashMap<>();
-        extractClaims.put("roles", userDetails.getAuthorities());
+        String roles = userDetails.getAuthorities().toString()
+                .replace("[", "")
+                .replace("]", "")
+                .replace(" ", "")
+                .replace("ROLE_", "");
+        extractClaims.put("rls", roles);
+        Worker worker = workerRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(
+                        () -> new UsernameNotFoundException(
+                                "User not found with username: " + userDetails.getUsername()
+                        )
+                );
+        extractClaims.put("cmp", worker.getCompanyId());
+        extractClaims.put("str", worker.getStoreId());
         return generateToken(extractClaims, userDetails);
     }
 

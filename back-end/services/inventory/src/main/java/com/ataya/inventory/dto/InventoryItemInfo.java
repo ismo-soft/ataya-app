@@ -1,10 +1,7 @@
-package com.ataya.inventory.model;
-
+package com.ataya.inventory.dto;
 
 import com.ataya.inventory.enums.ItemUnit;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
@@ -13,9 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document
-public class Inventory {
-    @Id
+public class InventoryItemInfo {
     private String id;
     private String storeId;
     private String productId;

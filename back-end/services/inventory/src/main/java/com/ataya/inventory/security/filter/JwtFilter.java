@@ -1,5 +1,6 @@
 package com.ataya.inventory.security.filter;
 
+import com.ataya.inventory.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -74,16 +75,20 @@ public class JwtFilter extends OncePerRequestFilter {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+            User user = User.builder()
+                    .username(claims.getSubject())
+                    .companyId(claims.get("cmp", String.class))
+                    .storeId(claims.get("str", String.class))
+                    .build();
 
-            String username = claims.getSubject();
+            String rolesString = claims.get("rls", String.class);
 
-            List<Map<String, String>> roles = (List<Map<String, String>>) claims.get("roles");
-
-            List<GrantedAuthority> authorities = roles.stream()
-                    .map(roleMap -> new SimpleGrantedAuthority(roleMap.get("authority")))
+            List<GrantedAuthority> authorities = Arrays.stream(rolesString.split(","))
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                     .collect(Collectors.toList());
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {

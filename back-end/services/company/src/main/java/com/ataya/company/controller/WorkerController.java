@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/company/worker")
+@RequestMapping("/worker")
 public class WorkerController {
 
     private final WorkerService workerService;
@@ -74,6 +74,15 @@ public class WorkerController {
             summary = "Get workers",
             description = """
                     This endpoint is used to get workers. \s
+                    - Filter workers by request parameters \s
+                    - Request parameters:
+                        - nm: name of worker
+                        - snm: surname of worker
+                        - unm: username of worker
+                        - eml: email of worker
+                        - phn: phone number of worker
+                        - strId: store id of worker
+                    
                     ### Authentication: bearer token is required. \s
                     ### Authorizations: \s
                         - user with role ADMIN can get workers of his company. \s
@@ -81,12 +90,12 @@ public class WorkerController {
                     """
     )
     public ResponseEntity<ApiResponse<List<WorkerInfoResponse>>> getWorkers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String surname,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String storeId,
+            @RequestParam(required = false, name = "nm") String name,
+            @RequestParam(required = false, name = "snm") String surname,
+            @RequestParam(required = false, name = "unm") String username,
+            @RequestParam(required = false, name = "eml") String email,
+            @RequestParam(required = false, name = "phn") String phone,
+            @RequestParam(required = false, name = "strId") String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker authenticatedPrincipal

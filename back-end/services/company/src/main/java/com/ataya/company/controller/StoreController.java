@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/company/store")
+@RequestMapping("/store")
 public class StoreController {
 
     private final StoreService storeService;
@@ -66,15 +66,22 @@ public class StoreController {
             summary = "Get stores",
             description = """
                     This endpoint is used to get stores. \s
+                    Endpoint is used to get stores by search filters. \s
+                    Request parameters:
+                        - nm: name of store
+                        - strC: store code
+                        - dsc: description
+                        - sts: status
+                    
                     ### Authentication: bearer token is required. \s
                     ### Authorizations: user with role ADMIN can get stores. \s
                     """
     )
     public ResponseEntity<ApiResponse<List<StoreInfoResponse>>> getStores(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String storeCode,
-            @RequestParam(required = false) String description,
-            @RequestParam(required = false) String status,
+            @RequestParam(required = false, name = "nm") String name,
+            @RequestParam(required = false, name = "strC") String storeCode,
+            @RequestParam(required = false, name = "dsc") String description,
+            @RequestParam(required = false, name = "sts") String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker owner //get company id from owner
@@ -111,60 +118,32 @@ public class StoreController {
             summary = "Get store workers",
             description = """
                     This endpoint is used to get store workers. \s
+                    Endpoint is used to get store workers by search filters. \s
+                    Request parameters:
+                        - nm: name of worker
+                        - snm: surname of worker
+                        - usm: username of worker
+                        - eml: email of worker
+                        - phn: phone number of worker
+                        - strId: store id of worker
+                    
                     ### Authentication: bearer token is required. \s
                     ### Authorizations: user with role ADMIN or MANAGER can get store workers. \s
                     """
     )
     public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreWorkers(
-            @RequestParam(required = false) String storeId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String surname,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phone,
+            @RequestParam(required = false, name = "strId") String storeId,
+            @RequestParam(required = false, name = "nm") String name,
+            @RequestParam(required = false, name = "snm") String surname,
+            @RequestParam(required = false, name = "usm") String username,
+            @RequestParam(required = false, name = "eml") String email,
+            @RequestParam(required = false, name = "phn") String phone,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal Worker authenticatedPrincipal
             ) {
         String id = storeId == null ? authenticatedPrincipal.getStoreId() : storeId;
         return ResponseEntity.ok(storeService.getStoreWorkers(id, name, surname, username, email, phone, page, size));
-    }
-
-    // get store products
-    @GetMapping("/products")
-    @PreAuthorize("(hasRole('ADMIN') and @storeSecurity.hasAccess(#storeId, authentication.principal.companyId)) or ((hasRole('MANAGER')) and #storeId == authentication.principal.storeId)")
-    @Operation(
-            summary = "Get store products",
-            description = """
-                    This endpoint is used to get store products. \s
-                    ### Authentication: bearer token is required. \s
-                    ### Authorizations: user with role ADMIN or MANAGER can get store products. \s
-                    """
-    )
-    public ResponseEntity<ApiResponse<StoreDetailsResponse>> getStoreProducts(
-            @RequestParam(required = false) String storeId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String sku,
-            @RequestParam(required = false) String barcode,
-            @RequestParam(required = false) String upc,
-            @RequestParam(required = false) String ean,
-            @RequestParam(required = false) String serialNumber,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String price,
-            @RequestParam(required = false) String discount,
-            @RequestParam(required = false) String discountRate,
-            @RequestParam(required = false) String isDiscounted,
-            @RequestParam(required = false) String discountPrice,
-            @RequestParam(required = false) String sz,
-            @RequestParam(required = false) String weight,
-            @RequestParam(required = false) String color,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal Worker authenticatedPrincipal
-    ) {
-        String id = storeId == null ? authenticatedPrincipal.getStoreId() : storeId;
-        return ResponseEntity.ok(storeService.getStoreProducts(id, name, sku, barcode, upc, ean, serialNumber, brand, category, price, discount, discountRate, isDiscounted, discountPrice, sz, weight, color, page, size));
     }
 
     // get store details
