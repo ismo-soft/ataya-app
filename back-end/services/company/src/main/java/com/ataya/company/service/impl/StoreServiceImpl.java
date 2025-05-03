@@ -39,14 +39,12 @@ public class StoreServiceImpl implements StoreService {
     private final StoreMapper storeMapper;
     private final WorkerService workerService;
     private final FileService fileService;
-    private final ProductService productService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService, ProductService productService) {
+    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService) {
         this.storeRepository = storeRepository;
         this.storeMapper = storeMapper;
         this.workerService = workerService;
         this.fileService = fileService;
-        this.productService = productService;
     }
 
     @Override
@@ -248,26 +246,10 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public ApiResponse<StoreDetailsResponse> getStoreProducts(String storeId, String name, String sku, String barcode, String upc, String ean, String serialNumber, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size) {
-        StoreDetailsResponse response = new StoreDetailsResponse();
-        response.setStore(getStoreInfo(storeId).getData());
-        response.setProducts(productService.getProducts(name, brand, category, sz, weight, color, page, size,null, storeId).getData());
-        response.setProductCount(response.getProducts().size());
-        return ApiResponse.<StoreDetailsResponse>builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.OK.getReasonPhrase())
-                .statusCode(HttpStatus.OK.value())
-                .message("Store products retrieved successfully")
-                .data(response)
-                .build();
-    }
-
-    @Override
     public ApiResponse<StoreDetailsResponse> getStoreDetails(String storeId) {
         StoreDetailsResponse response = new StoreDetailsResponse();
         response.setStore(getStoreInfo(storeId).getData());
         response.setWorkers(workerService.getWorkers(null,null,null,null,null,null,storeId,false,0,10).getData());
-        response.setProducts(productService.getProducts(null,null,null,null,null, null, 0, 10,null, storeId).getData());
         response.setWorkerCount(response.getWorkers().size());
         response.setProductCount(response.getProducts().size());
         return ApiResponse.<StoreDetailsResponse>builder()
@@ -277,5 +259,15 @@ public class StoreServiceImpl implements StoreService {
                 .message("Store details retrieved successfully")
                 .data(response)
                 .build();
+    }
+
+    @Override
+    public List<String> getStoresByCompanyId(String companyId) {
+        List<Store> stores = storeRepository.findAllByCompanyId(companyId);
+        List<String> storeIds = new ArrayList<>();
+        for (Store store : stores) {
+            storeIds.add(store.getId());
+        }
+        return storeIds;
     }
 }

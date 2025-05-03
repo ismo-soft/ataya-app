@@ -21,4 +21,6 @@ public interface ProductService {
     ApiResponse<ProductInfoResponse> getProductById(String id);
 
     ApiResponse<ProductDetailsResponse> getProductDetailsById(String id);
+
+    void sendProductToKafka(String id, String name, String companyId);
 }

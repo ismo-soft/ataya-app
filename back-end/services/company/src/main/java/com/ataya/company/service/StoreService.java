@@ -26,7 +26,7 @@ public interface StoreService {
 
     ApiResponse<StoreDetailsResponse> getStoreWorkers(String storeId, String name, String surname, String username, String email, String phone, int page, int size);
 
-    ApiResponse<StoreDetailsResponse> getStoreProducts(String storeId, String name, String sku, String barcode, String upc, String ean, String serialNumber, String brand, String category, String price, String discount, String discountRate, String isDiscounted, String discountPrice, String sz, String weight, String color, int page, int size);
-
     ApiResponse<StoreDetailsResponse> getStoreDetails(String storeId);
+
+    List<String> getStoresByCompanyId(String companyId);
 }

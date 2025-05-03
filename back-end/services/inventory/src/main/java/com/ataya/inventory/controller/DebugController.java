@@ -58,4 +58,10 @@ public class DebugController {
                 """.formatted(user.getUsername(), user.getCompanyId(), user.getStoreId());
     }
 
+    // endpoint to say hello to all users
+    @GetMapping("/public/hello")
+    public String helloPublic() {
+        return "Hello from DebugController for Public";
+    }
+
 }
