@@ -2,7 +2,8 @@ package com.ataya.inventory.service;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
-import com.ataya.inventory.dto.product.ProductDto;
+import com.ataya.inventory.dto.company.ProductDto;
+import com.ataya.inventory.dto.company.StoreDto;
 import com.ataya.inventory.model.User;
 import com.ataya.inventory.util.ApiResponse;
 
@@ -14,4 +15,6 @@ public interface InventoryService {
     ApiResponse<InventoryItemInfo> updateInventoryItem(UpdateInventoryRequest requestBody, User user, String productId, String storeId);
 
     void createProductInventory(ProductDto productDto);
+
+    void createStoreInventory(StoreDto storeDto);
 }

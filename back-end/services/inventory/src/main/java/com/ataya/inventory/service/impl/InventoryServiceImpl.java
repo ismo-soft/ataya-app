@@ -2,7 +2,8 @@ package com.ataya.inventory.service.impl;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
-import com.ataya.inventory.dto.product.ProductDto;
+import com.ataya.inventory.dto.company.ProductDto;
+import com.ataya.inventory.dto.company.StoreDto;
 import com.ataya.inventory.enums.ItemUnit;
 import com.ataya.inventory.exception.custom.InvalidOperationException;
 import com.ataya.inventory.exception.custom.ResourceNotFoundException;
@@ -13,7 +14,6 @@ import com.ataya.inventory.model.User;
 import com.ataya.inventory.repo.InventoryRepository;
 import com.ataya.inventory.service.InventoryService;
 import com.ataya.inventory.util.ApiResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -143,6 +143,28 @@ public class InventoryServiceImpl implements InventoryService {
                     .storeId(storeId)
                     .companyId(productDto.getCompanyId())
                     .productId(productDto.getId())
+                    .price(0.0)
+                    .quantity(0.0)
+                    .discount(0.0)
+                    .discountRate(0.0)
+                    .isDiscounted(false)
+                    .reorderLevel(0.0)
+                    .unit(ItemUnit.PIECE)
+                    .lastSupplyQuantity(0.0)
+                    .build();
+            toSave.add(inventory);
+        }
+        inventoryRepository.saveAll(toSave);
+    }
+
+    @Override
+    public void createStoreInventory(StoreDto storeDto) {
+        List<Inventory> toSave = new ArrayList<>();
+        for (String productId : storeDto.getProductIds()) {
+            Inventory inventory = Inventory.builder()
+                    .storeId(storeDto.getId())
+                    .companyId(storeDto.getCompanyId())
+                    .productId(productId)
                     .price(0.0)
                     .quantity(0.0)
                     .discount(0.0)

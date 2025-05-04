@@ -89,6 +89,7 @@ public class CompanyServiceImpl implements CompanyService {
         owner.setCompanyId(company.getId());
         // save user
         workerService.saveWorker(owner);
+        storeService.createStoreWithDefaults(company.getId());
         return ApiResponse.<CompanyInfoResponse>builder()
                 .message("Company created successfully")
                 .status(HttpStatus.CREATED.getReasonPhrase())

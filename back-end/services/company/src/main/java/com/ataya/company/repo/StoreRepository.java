@@ -11,4 +11,6 @@ public interface StoreRepository extends MongoRepository<Store, String>, CustomS
     List<Store> findAllByCompanyId(String companyId);
 
     boolean existsByIdAndCompanyId(String id, String companyId);
+
+    List<Store> findByCompanyId(String companyId);
 }

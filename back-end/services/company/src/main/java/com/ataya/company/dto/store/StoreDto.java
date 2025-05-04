@@ -1,5 +1,4 @@
-package com.ataya.inventory.dto.product;
-
+package com.ataya.company.dto.store;
 
 import lombok.*;
 
@@ -10,10 +9,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString
-public class ProductDto {
+public class StoreDto {
     private String id;
     private String name;
     private String companyId;
-    private List<String> storeIds;
+    private List<String> productIds;
+
 }

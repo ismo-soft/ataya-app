@@ -11,7 +11,7 @@ import com.ataya.company.model.Worker;
 import com.ataya.company.repo.ProductRepository;
 import com.ataya.company.service.ProductService;
 import com.ataya.company.service.StoreService;
-import com.ataya.company.service.kafka.producer.ProductProducer;
+import com.ataya.company.service.kafka.producer.CompanyServiceProducer;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.ataya.company.service.impl.CommonService.addCriteria;
-import static com.ataya.company.service.impl.CommonService.addCriteriaWithRange;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -38,17 +37,15 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
 
-    private final ProductProducer productProducer;
+    private final CompanyServiceProducer companyServiceProducer;
 
-    private final StoreService storeService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CommonService commonService, FileServiceImpl fileService, ProductMapper productMapper, ProductProducer productProducer, StoreService storeService) {
+    public ProductServiceImpl(ProductRepository productRepository, CommonService commonService, FileServiceImpl fileService, ProductMapper productMapper, CompanyServiceProducer companyServiceProducer) {
         this.productRepository = productRepository;
         this.commonService = commonService;
         this.fileService = fileService;
         this.productMapper = productMapper;
-        this.productProducer = productProducer;
-        this.storeService = storeService;
+        this.companyServiceProducer = companyServiceProducer;
     }
 
 
@@ -58,6 +55,7 @@ public class ProductServiceImpl implements ProductService {
         if(createProductRequest.getCategory() != null) {
             category = ProductCategory.isCategoryExist(createProductRequest.getCategory()) ? ProductCategory.valueOf(createProductRequest.getCategory()) : ProductCategory.OTHERS;
         }
+
         Product product = Product.builder()
                 .name(createProductRequest.getName())
                 .description(createProductRequest.getDescription())
@@ -242,12 +240,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void sendProductToKafka(String id, String name, String companyId) {
-        productProducer.sendProduct(
+        companyServiceProducer.sendProduct(
                 ProductDto.builder()
                         .id(id)
                         .name(name)
                         .companyId(companyId)
-                        .storeIds(storeService.getStoresByCompanyId(companyId))
+                        .storeIds(commonService.getStoresByCompanyId(companyId))
                         .build()
         );
     }
