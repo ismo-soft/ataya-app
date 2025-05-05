@@ -27,6 +27,7 @@ public class Inventory {
     private Double price;
     private Double discount;
     private Double discountRate;
+    private Double discountedPrice;
     private Boolean isDiscounted;
     private LocalDateTime updatedAt;
     private String updatedBy;

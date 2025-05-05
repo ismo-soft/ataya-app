@@ -21,7 +21,16 @@ public class CommonService {
         if (value != null && !value.isEmpty()) {
             String[] range = value.split("-");
             if (range.length == 2) {
-                criteria.add(Criteria.where(field).gte(range[0]).lte(range[1]));
+                try {
+
+                        Double lowerBound = Double.parseDouble(range[0]);
+                        Double upperBound = Double.parseDouble(range[1]);
+                        criteria.add(Criteria.where(field).gte(lowerBound).lte(upperBound));
+
+                } catch (NumberFormatException e) {
+                    // Handle parsing error - could log warning or throw custom exception
+                    System.err.println("Invalid number format for " + field + " range: " + value);
+                }
             }
         }
 

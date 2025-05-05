@@ -1,7 +1,6 @@
 package com.ataya.inventory.service.kafka.consumer;
 
 import com.ataya.inventory.dto.company.StoreDto;
-import com.ataya.inventory.repo.InventoryRepository;
 import com.ataya.inventory.service.InventoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

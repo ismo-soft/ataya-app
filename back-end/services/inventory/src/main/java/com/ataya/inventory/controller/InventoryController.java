@@ -1,12 +1,5 @@
 package com.ataya.inventory.controller;
 
-/*
- * Endpoints:
- * endpoint to get all items by search filters
- * endpoint ot create item
- * endpoint to update item
- */
-
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.model.User;
@@ -20,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/inventory")
@@ -36,41 +31,206 @@ public class InventoryController {
                     
                     Filter items by request parameters \b
                     
-                    Request parameters:
-                    \s\t
+                    Request parameters:\s
+                    
                         - qty: quantity of item \n\t
                         - prc: price of item \n\t
+                        - dis-prc: discounted price of item \n\t
                         - dCnt: discount of item \n\t
                         - dCntR: discount rate of item \n\t
-                        - productId: id of product \n\t
+                        - prd: id of product \n\t
+                        - pg: page number \n\t
+                        - sz: page size \n\t
                     
-                    qty, prc,dCnt, dCntR and productId are optional \s
+                    qty, prc, dis-prc, dCnt, dCntR and productId are optional \s
+                    qty, prc, dis-prc, dCnt and dCntR are range values, use '-' to separate min and max values \s
                     
-                    qty, prc,dCnt and dCntR are range values, use '-' to separate min and max values \s
-
-                    ## Authentication: \t Token is required \s
-                    ## Authorization: \t No Authority for this endpoint (user with any role can access this endpoint) \t
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t No Authority for this endpoint (user with any role can access this endpoint) \t
                     """
     )
     public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> getFilteredInventoryItems(@RequestParam(required = false, name = "qty") String quantity,
                                                                                           @RequestParam(required = false, name = "prc") String price,
+                                                                                          @RequestParam(required = false, name = "dis-prc") String discountedPrice,
                                                                                           @RequestParam(required = false, name = "dCnt") String discount,
                                                                                           @RequestParam(required = false, name = "dCntR") String discountRate,
                                                                                           @AuthenticationPrincipal User user,
-                                                                                          @RequestParam (required = false, name = "page") int page,
-                                                                                          @RequestParam (required = false, name = "size") int size,
+                                                                                          @RequestParam (required = false, name = "pg") Integer page,
+                                                                                          @RequestParam (required = false, name = "sz") Integer size,
                                                                                           @RequestParam(required = false, name = "prd") String productId){
         return ResponseEntity.ok(inventoryService.getFilteredInventoryItems(
-                quantity,price,discount,discountRate,user.getStoreId(),user.getCompanyId(),productId,page,size
+                quantity,price,discountedPrice ,discount,discountRate,user.getStoreId(),user.getCompanyId(),productId,page,size
         ));
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item. when quantity, price, discount and discount rate getting updated the new values will be set \s
+                    
+                    Request parameters: \s
+                    
+                        - str: store id \n\t
+                        - prd: product id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
     public ResponseEntity<ApiResponse<InventoryItemInfo>> updateInventoryItem(@RequestBody UpdateInventoryRequest requestBody,
-                                                                                  @AuthenticationPrincipal User user,
+                                                                              @AuthenticationPrincipal User user,
                                                                               @RequestParam(name = "str") String storeId,
                                                                               @RequestParam(name = "prd") String productId){
-        return ResponseEntity.ok(inventoryService.updateInventoryItem(requestBody, user,storeId, productId));
+        return ResponseEntity.ok(inventoryService.updateInventoryItem(requestBody, user,productId, storeId));
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @PutMapping("/update-price/{storeId}")
+    @Operation(
+            summary = "update item price by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item price. when price getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> updateProductPrice(@RequestBody Map<String,Double> prdId_priceMap,
+                                                                                  @AuthenticationPrincipal User user,
+                                                                                  @PathVariable String storeId){
+        return ResponseEntity.ok(inventoryService.updateProductPrice(prdId_priceMap, user,storeId));
+    }
+
+    @PutMapping("/raise-percentage/{storeId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item price by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item price. when price getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> raiseProductPrice(@RequestBody Map<String,Double> prdId_percentageMap,
+                                                                                  @AuthenticationPrincipal User user,
+                                                                                  @PathVariable String storeId){
+        return ResponseEntity.ok(inventoryService.raiseProductPrice(prdId_percentageMap, user,storeId));
+    }
+
+    @PutMapping("/raise-all-percentage/{storeId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item price by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item price. when price getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    Request parameters: \s
+                    
+                        - pct: percentage of price \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> raiseAllProductPrice(@RequestBody Set<String> prdIds,
+                                                                        @AuthenticationPrincipal User user,
+                                                                        @PathVariable String storeId,
+                                                                        @RequestParam(name = "pct") double percentage){
+        return ResponseEntity.ok(inventoryService.raiseAllProductPrice(prdIds, user,storeId, percentage));
+    }
+
+    /*
+     * to set discount
+     * to set same discount rate
+     * to set different discount rate
+     */
+
+    @PutMapping("/discount/{storeId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item discount by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item discount. when discount getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> updateProductDiscount(@RequestBody Map<String,Double> prdId_discountMap,
+                                                                                      @AuthenticationPrincipal User user,
+                                                                                      @PathVariable String storeId){
+        return ResponseEntity.ok(inventoryService.setDiscount(prdId_discountMap, user,storeId));
+    }
+    @PutMapping("/discount-rate/{storeId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item discount rate by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item discount rate. when discount rate getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> setDiscountRate(@RequestBody Map<String,Double> prdId_discountRateMap,
+                                                                                          @AuthenticationPrincipal User user,
+                                                                                          @PathVariable String storeId){
+        return ResponseEntity.ok(inventoryService.setDiscountRate(prdId_discountRateMap, user,storeId));
+    }
+    @PutMapping("/discount-same-rate/{storeId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
+    @Operation(
+            summary = "update item discount rate by store id and product id",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint updates item discount rate. when discount rate getting updated the new values will be set \s
+                    
+                    Path variables: \s
+                    
+                        - storeId: store id \n\t
+                    
+                    Request parameters: \s
+                    
+                        - pct: percentage of price \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> setSameDiscountRate(@RequestBody Set<String> prdIds,
+                                                                                      @AuthenticationPrincipal User user,
+                                                                                      @PathVariable String storeId,
+                                                                                      @RequestParam(name = "pct") String percentage){
+        return ResponseEntity.ok(inventoryService.setSameDiscountRate(prdIds, user,storeId, percentage));
+    }
+
 }
