@@ -237,4 +237,18 @@ public class AuthController {
     public ResponseEntity<ApiResponse<WorkerInfoResponse>> registerWorker(@RequestBody RegisterWorkerRequest registerWorkerRequest, @AuthenticationPrincipal Worker authenticatedUser) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerWorker(registerWorkerRequest, authenticatedUser));
     }
+
+    // return isTokenExpired
+    @Operation(
+            summary = "Check if token is expired",
+            description = """
+                    Use this endpoint to check if the token is expired.  \s
+                    ### Authentication: no need to Bearer token.  \s
+                    ### Authorization: available to all users.
+                    """
+    )
+    @GetMapping("/is-token-expired")
+    public Boolean isTokenExpired(@RequestParam(name = "tkn") String token) {
+        return authService.isTokenExpired(token);
+    }
 }

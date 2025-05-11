@@ -20,7 +20,6 @@ public class ProductItem {
     private String storeId;
     private String productId;
     private String sku;
-    private String barcode;
     private String upc;
     private String ean;
     private ItemStatus status;

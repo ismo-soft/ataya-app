@@ -640,4 +640,9 @@ public class AuthServiceImpl implements AuthService {
         return authenticatedPrincipal.getRoles().toString();
     }
 
+    @Override
+    public Boolean isTokenExpired(String token) {
+        jwtService.isTokenExpired(token);
+    }
+
 }

@@ -29,4 +29,6 @@ public interface AuthService {
     ApiResponse<WorkerInfoResponse> registerWorker(RegisterWorkerRequest registerWorkerRequest, Worker authenticatedUser);
 
     String getRoles(Worker authenticatedPrincipal);
+
+    Boolean isTokenExpired(String token);
 }
