@@ -60,18 +60,19 @@ public class StoreController {
     }
 
     // get stores
-    @GetMapping("/Stores")
+    @GetMapping("/stores")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Get stores",
             description = """
                     This endpoint is used to get stores. \s
                     Endpoint is used to get stores by search filters. \s
-                    Request parameters:
-                        - nm: name of store
-                        - strC: store code
-                        - dsc: description
-                        - sts: status
+                    
+                    Request parameters: \s
+                        - nm: name of store \s
+                        - strC: store code \s
+                        - dsc: description \s
+                        - sts: status \s
                     
                     ### Authentication: bearer token is required. \s
                     ### Authorizations: user with role ADMIN can get stores. \s
@@ -119,13 +120,15 @@ public class StoreController {
             description = """
                     This endpoint is used to get store workers. \s
                     Endpoint is used to get store workers by search filters. \s
-                    Request parameters:
-                        - nm: name of worker
-                        - snm: surname of worker
-                        - usm: username of worker
-                        - eml: email of worker
-                        - phn: phone number of worker
-                        - strId: store id of worker
+                    
+                    Request parameters: \s
+                    
+                        - nm: name of worker \s
+                        - snm: surname of worker \s
+                        - usm: username of worker \s
+                        - eml: email of worker \s
+                        - phn: phone number of worker \s
+                        - strId: store id of worker \s
                     
                     ### Authentication: bearer token is required. \s
                     ### Authorizations: user with role ADMIN or MANAGER can get store workers. \s

@@ -208,12 +208,15 @@ public class StoreServiceImpl implements StoreService {
                     "Store not found"
             );
         }
-        String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
+
+        if (profilePicture != null) {
+            String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
+            store.setProfilePicture(profilePictureFile);
+        }
         // update store
         store.setName(updateStoreRequest.getName());
         store.setStoreCode(updateStoreRequest.getStoreCode());
         store.setDescription(updateStoreRequest.getDescription());
-        store.setProfilePicture(profilePictureFile);
         store.setEmail(updateStoreRequest.getEmail());
         store.setPhoneNumber(updateStoreRequest.getPhoneNumber());
         store.setWebsite(updateStoreRequest.getWebsite());

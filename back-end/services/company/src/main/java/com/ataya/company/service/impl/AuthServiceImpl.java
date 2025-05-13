@@ -642,7 +642,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Boolean isTokenExpired(String token) {
-        jwtService.isTokenExpired(token);
+        return jwtService.isTokenExpired(token);
     }
 
 }
