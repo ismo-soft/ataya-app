@@ -33,6 +33,15 @@ public class CommonService {
                 }
             }
         }
+    }
 
+    // to add criteria with date range
+    public static void addCriteriaWithDateRange(List<Criteria> criteria, String field, String value) {
+        if (value != null && !value.isEmpty()) {
+            String[] range = value.split("-");
+            if (range.length == 2) {
+                criteria.add(Criteria.where(field).gte(range[0]).lte(range[1]));
+            }
+        }
     }
 }

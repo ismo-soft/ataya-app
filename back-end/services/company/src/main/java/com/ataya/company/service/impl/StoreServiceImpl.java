@@ -1,6 +1,5 @@
 package com.ataya.company.service.impl;
 
-import com.ataya.company.dto.store.StoreDto;
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
 import com.ataya.company.dto.store.response.StoreDetailsResponse;
@@ -15,7 +14,6 @@ import com.ataya.company.repo.StoreRepository;
 import com.ataya.company.service.FileService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
-import com.ataya.company.service.kafka.producer.CompanyServiceProducer;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -40,15 +38,13 @@ public class StoreServiceImpl implements StoreService {
     private final StoreMapper storeMapper;
     private final WorkerService workerService;
     private final FileService fileService;
-    private final CompanyServiceProducer companyServiceProducer;
     private final CommonService commonService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService, CompanyServiceProducer companyServiceProducer, CommonService commonService) {
+    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService, CommonService commonService) {
         this.storeRepository = storeRepository;
         this.storeMapper = storeMapper;
         this.workerService = workerService;
         this.fileService = fileService;
-        this.companyServiceProducer = companyServiceProducer;
         this.commonService = commonService;
     }
 
@@ -93,8 +89,6 @@ public class StoreServiceImpl implements StoreService {
             store.setProfilePicture(profilePictureFile);
         }
         storeRepository.save(store);
-        // send store to kafka
-        sendStoreToKafka(store.getId(), store.getName(), companyId);
         // return store info response
         return ApiResponse.<StoreInfoResponse>builder()
                 .timestamp(LocalDateTime.now())
@@ -269,18 +263,6 @@ public class StoreServiceImpl implements StoreService {
                 .message("Store details retrieved successfully")
                 .data(response)
                 .build();
-    }
-
-    @Override
-    public void sendStoreToKafka(String id, String name, String companyId) {
-        companyServiceProducer.sendStore(
-                StoreDto.builder()
-                        .id(id)
-                        .companyId(companyId)
-                        .name(name)
-                        .productIds(commonService.getProductIdsByCompanyId(companyId))
-                        .build()
-        );
     }
 
     @Override

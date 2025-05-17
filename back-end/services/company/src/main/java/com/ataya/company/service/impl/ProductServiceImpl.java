@@ -10,8 +10,6 @@ import com.ataya.company.model.Product;
 import com.ataya.company.model.Worker;
 import com.ataya.company.repo.ProductRepository;
 import com.ataya.company.service.ProductService;
-import com.ataya.company.service.StoreService;
-import com.ataya.company.service.kafka.producer.CompanyServiceProducer;
 import com.ataya.company.util.ApiResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -37,15 +35,12 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
 
-    private final CompanyServiceProducer companyServiceProducer;
 
-
-    public ProductServiceImpl(ProductRepository productRepository, CommonService commonService, FileServiceImpl fileService, ProductMapper productMapper, CompanyServiceProducer companyServiceProducer) {
+    public ProductServiceImpl(ProductRepository productRepository, CommonService commonService, FileServiceImpl fileService, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.commonService = commonService;
         this.fileService = fileService;
         this.productMapper = productMapper;
-        this.companyServiceProducer = companyServiceProducer;
     }
 
 
@@ -71,20 +66,11 @@ public class ProductServiceImpl implements ProductService {
 
 
         product = productRepository.save(product);
-        if(images == null || images.isEmpty()) {
-            sendProductToKafka(product.getId(), product.getName(), user.getCompanyId());
-            return ApiResponse.<ProductInfoResponse>builder()
-                    .status(HttpStatus.CREATED.getReasonPhrase())
-                    .statusCode(HttpStatus.CREATED.value())
-                    .message("Product created successfully")
-                    .timestamp(LocalDateTime.now())
-                    .data(productMapper.toProductInfoResponse(product))
-                    .build();
+        if(images != null && !images.isEmpty()) {
+            List<String> imageUrls = fileService.saveImageFiles(images, "product", user.getCompanyId(), product.getId());
+            product.setImages(imageUrls);
         }
-        List<String> imageUrls = fileService.saveImageFiles(images, "product", user.getCompanyId(), product.getId());
-        product.setImages(imageUrls);
         productRepository.save(product);
-        sendProductToKafka(product.getId(), product.getName(), user.getCompanyId());
         return ApiResponse.<ProductInfoResponse>builder()
                 .status(HttpStatus.CREATED.getReasonPhrase())
                 .statusCode(HttpStatus.CREATED.value())
@@ -122,9 +108,10 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedBy(worker.getUsername());
         product.setUpdatedAt(LocalDateTime.now());
 
-
-        List<String> imageUrls = fileService.saveImageFiles(images, "product", worker.getCompanyId(), product.getId());
-        product.setImages(imageUrls);
+        if (images != null && !images.isEmpty()) {
+            List<String> imageUrls = fileService.saveImageFiles(images, "product", worker.getCompanyId(), product.getId());
+            product.setImages(imageUrls);
+        }
         productRepository.save(product);
         return ApiResponse.<ProductInfoResponse>builder()
                 .status(HttpStatus.OK.getReasonPhrase())
@@ -239,15 +226,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void sendProductToKafka(String id, String name, String companyId) {
-        companyServiceProducer.sendProduct(
-                ProductDto.builder()
-                        .id(id)
-                        .name(name)
-                        .companyId(companyId)
-                        .storeIds(commonService.getStoresByCompanyId(companyId))
-                        .build()
-        );
+    public Product getProductEntityById(String productId) {
+        return productRepository.findById(productId).orElse(null);
     }
 
 

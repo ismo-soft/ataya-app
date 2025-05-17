@@ -20,6 +20,9 @@ public class Inventory {
     private String storeId;
     private String productId;
     private String companyId;
+    private String productName;
+    private String productCategory;
+    private String productBrand;
     private Double quantity;
     private Double reorderLevel;
     private Double lastSupplyQuantity;

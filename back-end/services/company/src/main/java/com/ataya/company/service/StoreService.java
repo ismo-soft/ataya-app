@@ -28,7 +28,5 @@ public interface StoreService {
 
     ApiResponse<StoreDetailsResponse> getStoreDetails(String storeId);
 
-    void sendStoreToKafka(String id, String name,String companyId);
-
     void createStoreWithDefaults(String companyId);
 }

@@ -2,6 +2,8 @@ package com.ataya.inventory.controller;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
+import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
+import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.model.User;
 import com.ataya.inventory.service.InventoryService;
 import com.ataya.inventory.util.ApiResponse;
@@ -158,12 +160,6 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.raiseAllProductPrice(prdIds, user,storeId, percentage));
     }
 
-    /*
-     * to set discount
-     * to set same discount rate
-     * to set different discount rate
-     */
-
     @PutMapping("/discount/{storeId}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_MANAGER')")
     @Operation(
@@ -232,5 +228,50 @@ public class InventoryController {
                                                                                       @RequestParam(name = "pct") String percentage){
         return ResponseEntity.ok(inventoryService.setSameDiscountRate(prdIds, user,storeId, percentage));
     }
+
+    /*
+    * POST: supply inventory item
+    * PUT: edit quantity
+    * PUT: set Transfer
+    * */
+
+    @PostMapping("/supply")
+    @Operation(
+            summary = "supply inventory item",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint supply inventory item. when quantity getting updated the new values will be set \s
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> supplyInventoryItem(@RequestBody SupplyRequest request,
+                                                                              @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(inventoryService.supplyInventoryItems(request, user));
+    }
+
+    @PutMapping("/edit-quantity")
+    @Operation(
+            summary = "edit inventory item quantity",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint edit inventory item quantity. when quantity getting updated the new values will be set \s
+                    
+                    Request parameters: \s
+                    
+                        - str: store id \n\t
+                        - prd: product id \n\t
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t Admin and Manager can access this endpoint \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<InventoryItemInfo>> editInventoryItemQuantity(@RequestBody EditQuantityRequest request,
+                                                                                     @AuthenticationPrincipal User user){
+        return ResponseEntity.ok(inventoryService.editInventoryItemQuantity(request, user));
+    }
+
+
 
 }

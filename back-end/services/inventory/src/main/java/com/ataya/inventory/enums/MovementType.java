@@ -1,6 +1,7 @@
 package com.ataya.inventory.enums;
 
 public enum MovementType {
+    NEW,
     INCOMING,
     OUTGOING,
     ADJUSTMENT,

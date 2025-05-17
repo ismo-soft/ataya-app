@@ -3,7 +3,8 @@ package com.ataya.inventory.service.impl;
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.dto.company.ProductDto;
-import com.ataya.inventory.dto.company.StoreDto;
+import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
+import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.enums.ItemUnit;
 import com.ataya.inventory.exception.custom.InvalidOperationException;
 import com.ataya.inventory.exception.custom.ResourceNotFoundException;
@@ -13,7 +14,11 @@ import com.ataya.inventory.model.Inventory;
 import com.ataya.inventory.model.User;
 import com.ataya.inventory.repo.InventoryRepository;
 import com.ataya.inventory.service.InventoryService;
+import com.ataya.inventory.service.StockMovementService;
+import com.ataya.inventory.service.kafka.CorrelationStorage;
+import com.ataya.inventory.service.kafka.producer.ProductRequestProducer;
 import com.ataya.inventory.util.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -22,23 +27,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.ataya.inventory.service.impl.CommonService.*;
 
 @Service
+@RequiredArgsConstructor
 public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryMapper inventoryMapper;
     private final InventoryRepository inventoryRepository;
+    private final StockMovementService stockMovementService;
+    private final ProductRequestProducer productRequestProducer;
+    private final CorrelationStorage correlationStorage;
 
-    public InventoryServiceImpl(InventoryMapper inventoryMapper, InventoryRepository inventoryRepository) {
-        this.inventoryMapper = inventoryMapper;
-        this.inventoryRepository = inventoryRepository;
-    }
 
 
     @Override
@@ -127,54 +129,6 @@ public class InventoryServiceImpl implements InventoryService {
                 .data(inventoryMapper.toInventoryItemInfo(inventory))
                 .message("Inventory item updated successfully")
                 .build();
-    }
-
-    @Override
-    public void createProductInventory(ProductDto productDto) {
-        // create inventory for products in company stores
-        if (productDto.getStoreIds() == null || productDto.getStoreIds().isEmpty()) {
-            throw new ValidationException("storeId", productDto.getStoreIds(), "Store id cannot be null");
-        }
-        List<Inventory> toSave = new ArrayList<>();
-        for (String storeId : productDto.getStoreIds()) {
-            Inventory inventory = Inventory.builder()
-                    .storeId(storeId)
-                    .companyId(productDto.getCompanyId())
-                    .productId(productDto.getId())
-                    .price(0.0)
-                    .quantity(0.0)
-                    .discount(0.0)
-                    .discountRate(0.0)
-                    .isDiscounted(false)
-                    .reorderLevel(0.0)
-                    .unit(ItemUnit.PIECE)
-                    .lastSupplyQuantity(0.0)
-                    .build();
-            toSave.add(inventory);
-        }
-        inventoryRepository.saveAll(toSave);
-    }
-
-    @Override
-    public void createStoreInventory(StoreDto storeDto) {
-        List<Inventory> toSave = new ArrayList<>();
-        for (String productId : storeDto.getProductIds()) {
-            Inventory inventory = Inventory.builder()
-                    .storeId(storeDto.getId())
-                    .companyId(storeDto.getCompanyId())
-                    .productId(productId)
-                    .price(0.0)
-                    .quantity(0.0)
-                    .discount(0.0)
-                    .discountRate(0.0)
-                    .isDiscounted(false)
-                    .reorderLevel(0.0)
-                    .unit(ItemUnit.PIECE)
-                    .lastSupplyQuantity(0.0)
-                    .build();
-            toSave.add(inventory);
-        }
-        inventoryRepository.saveAll(toSave);
     }
 
     @Override
@@ -359,6 +313,125 @@ public class InventoryServiceImpl implements InventoryService {
                 .data(updatedInventories)
                 .message("Inventory item updated successfully")
                 .build();
+    }
+
+
+    @Override
+    public ApiResponse<InventoryItemInfo> editInventoryItemQuantity(EditQuantityRequest request, User user) {
+        if (user.getCompanyId() == null) {
+            throw new InvalidOperationException(
+                    "edit Inventory Item", "not authorized"
+            );
+        }
+        if (user.getStoreId() != null && user.getStoreId().equals(request.getStoreId())) {
+            throw new InvalidOperationException(
+                    "edit Inventory Item", "not authorized"
+            );
+        }
+        Inventory inventory = inventoryRepository.findByIdAndStoreId(request.getInventoryId(), request.getStoreId()).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Inventory Item", "inventory", request.getInventoryId() + " not found in store "
+                )
+        );
+        if (inventory.getCompanyId() == null || !inventory.getCompanyId().equals(user.getCompanyId())) {
+            throw new InvalidOperationException(
+                    "edit Inventory Item", "not authorized"
+            );
+        }
+        if (request.getNewQuantity() == null || request.getNewQuantity() <= 0) {
+            throw new ValidationException("quantity", request.getNewQuantity(), "Quantity cannot be null");
+        }
+        double quantityDifferent = request.getNewQuantity() - inventory.getQuantity();
+        setQuantity(inventory, request.getNewQuantity());
+        inventory.setUpdatedBy(user.getUsername());
+        inventory.setUpdatedAt(LocalDateTime.now());
+
+        inventoryRepository.save(inventory);
+        stockMovementService.editInventoryItemQuantity(request,quantityDifferent , user.getUsername());
+
+        return ApiResponse.<InventoryItemInfo>builder()
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(inventoryMapper.toInventoryItemInfo(inventory))
+                .message("Inventory item updated successfully")
+                .build();
+    }
+
+    @Override
+    public ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user) {
+        if (user.getCompanyId() == null) {
+            throw new InvalidOperationException(
+                    "supply Inventory Item", "not authorized"
+            );
+        }
+        if (user.getStoreId() != null && !user.getStoreId().equals(request.getStoreId())) {
+            throw new InvalidOperationException(
+                    "supply Inventory Item", "not authorized"
+            );
+        }
+        List<InventoryItemInfo> updatedInventories = new ArrayList<>();
+        request.getProduct_quantity().forEach(
+                (productId, quantity) -> {
+                    if (quantity <= 0) {
+                        throw new ValidationException("productId", quantity, "Quantity cannot be negative");
+                    }
+                    Optional<Inventory> inventoryOpt = inventoryRepository.findByProductIdAndStoreId(productId, request.getStoreId());
+                    if (inventoryOpt.isPresent()) {
+                        Inventory inventory = inventoryOpt.get();
+                        if (inventory.getCompanyId() == null || !inventory.getCompanyId().equals(user.getCompanyId())) {
+                            throw new InvalidOperationException(
+                                    "supply Inventory Item", "not authorized"
+                            );
+                        }
+                        inventory.setQuantity(inventory.getQuantity() + quantity);
+                        inventory.setLastSupplyQuantity(quantity);
+                        inventory.setUpdatedAt(LocalDateTime.now());
+                        inventory.setUpdatedBy(user.getUsername());
+                        inventory = inventoryRepository.save(inventory);
+                        updatedInventories.add(inventoryMapper.toInventoryItemInfo(inventory));
+                        stockMovementService.addSupplyMove(inventory.getId(),quantity ,request, user);
+                    } else {
+                        productRequestProducer.requestProductDetails(request.getStoreId(), productId, quantity, user.getUsername());
+                    }
+                }
+        );
+        return ApiResponse.<List<InventoryItemInfo>>builder()
+                .status(HttpStatus.OK.getReasonPhrase())
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(updatedInventories)
+                .message("Inventory item updated successfully")
+                .build();
+    }
+
+    @Override
+    public void createInventoryFromProductDto(ProductDto productDto) {
+        String StoreId = correlationStorage.getStoreId(productDto.getCorrelationId());
+        double quantity = correlationStorage.getQuantity(productDto.getCorrelationId());
+
+        Inventory inventory = Inventory.builder()
+                .storeId(StoreId)
+                .productId(productDto.getId())
+                .companyId(productDto.getCompanyId())
+                .productName(productDto.getName())
+                .productBrand(productDto.getBrand())
+                .productCategory(productDto.getProductCategory())
+                .quantity(quantity)
+                .reorderLevel(10.0)
+                .lastSupplyQuantity(0.0)
+                .unit(ItemUnit.PIECE)
+                .price(0.1)
+                .discount(0.0)
+                .discountRate(0.0)
+                .discountedPrice(0.0)
+                .isDiscounted(false)
+                .updatedBy(productDto.getUsername())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        inventory =  inventoryRepository.save(inventory);
+        stockMovementService.addCreateInventoryMove(inventory.getId() ,productDto, quantity, StoreId);
+        correlationStorage.remove(productDto.getCorrelationId());
     }
 
 

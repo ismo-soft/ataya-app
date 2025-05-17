@@ -14,6 +14,9 @@ public class ProductDto {
 
     private String id;
     private String name;
+    private String productCategory;
+    private String brand;
     private String companyId;
-    private List<String> storeIds;
+    private String correlationId;
+    private String username;
 }

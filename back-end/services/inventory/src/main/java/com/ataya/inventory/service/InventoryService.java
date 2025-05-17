@@ -3,7 +3,8 @@ package com.ataya.inventory.service;
 import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.dto.company.ProductDto;
-import com.ataya.inventory.dto.company.StoreDto;
+import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
+import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.model.User;
 import com.ataya.inventory.util.ApiResponse;
 
@@ -16,10 +17,6 @@ public interface InventoryService {
 
     ApiResponse<InventoryItemInfo> updateInventoryItem(UpdateInventoryRequest requestBody, User user, String productId, String storeId);
 
-    void createProductInventory(ProductDto productDto);
-
-    void createStoreInventory(StoreDto storeDto);
-
     ApiResponse<List<InventoryItemInfo>> updateProductPrice(Map<String, Double> prdIdPriceMap, User user, String storeId);
 
     ApiResponse<List<InventoryItemInfo>> raiseProductPrice(Map<String, Double> prdIdPercentageMap, User user, String storeId);
@@ -31,4 +28,10 @@ public interface InventoryService {
     ApiResponse<List<InventoryItemInfo>> setDiscountRate(Map<String, Double> prdIdDiscountRateMap, User user, String storeId);
 
     ApiResponse<List<InventoryItemInfo>> setSameDiscountRate(Set<String> prdIds, User user, String storeId, String percentage);
+
+    ApiResponse<InventoryItemInfo> editInventoryItemQuantity(EditQuantityRequest request, User user);
+
+    ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user);
+
+    void createInventoryFromProductDto(ProductDto productDto);
 }

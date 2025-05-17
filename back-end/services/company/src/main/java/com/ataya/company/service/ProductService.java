@@ -4,6 +4,7 @@ import com.ataya.company.dto.product.CreateProductRequest;
 import com.ataya.company.dto.product.ProductDetailsResponse;
 import com.ataya.company.dto.product.ProductInfoResponse;
 import com.ataya.company.dto.product.UpdateProductRequest;
+import com.ataya.company.model.Product;
 import com.ataya.company.model.Worker;
 import com.ataya.company.util.ApiResponse;
 import jakarta.validation.Valid;
@@ -22,5 +23,5 @@ public interface ProductService {
 
     ApiResponse<ProductDetailsResponse> getProductDetailsById(String id);
 
-    void sendProductToKafka(String id, String name, String companyId);
+    Product getProductEntityById(String productId);
 }
