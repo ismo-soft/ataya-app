@@ -25,7 +25,7 @@ public class ProductRequestConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ProductService productService;
 
-    @KafkaListener(topics = "request-product-details", groupId = "company-group")
+    @KafkaListener(topics = "product-details-request", groupId = "company-group")
     public void consume(String jsonMessage) throws JsonProcessingException {
         ProductInfoRequestDto request = objectMapper.readValue(jsonMessage, ProductInfoRequestDto.class);
 

@@ -35,6 +35,7 @@ public class StockMovementServiceImpl implements StockMovementService {
 
     @Override
     public void addSupplyMove(String inventoryId,double quantity, SupplyRequest request, User user) {
+        System.out.println("Hi, I am in addSupplyMove method");
         StockMovement sm = StockMovement.builder()
                 .inventoryId(inventoryId)
                 .type(MovementType.INCOMING)
@@ -54,7 +55,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                 .inventoryId(inventoryId)
                 .type(MovementType.NEW)
                 .storeId(storeId)
-                .quantity(null)
+                .quantity(0.0)
                 .note("New inventory item created")
                 .reason("New Product in store")
                 .happenedAt(LocalDateTime.now())

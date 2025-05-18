@@ -1,17 +1,13 @@
-package com.ataya.company.model;
+package com.ataya.company.dto.bankAccount;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "bank-account")
-public class BankAccount {
-    @Id
+public class BankAccountInfoResponse {
     private String id;
     private String bankName;
     private String accountHolderName;
@@ -19,4 +15,7 @@ public class BankAccount {
     private String swiftCode;
     private String currency;
     private String storeId;
+
+
+
 }

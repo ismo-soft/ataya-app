@@ -360,6 +360,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user) {
+        System.out.println("Hi, I am in supplyInventoryItems");
         if (user.getCompanyId() == null) {
             throw new InvalidOperationException(
                     "supply Inventory Item", "not authorized"
@@ -393,6 +394,13 @@ public class InventoryServiceImpl implements InventoryService {
                         stockMovementService.addSupplyMove(inventory.getId(),quantity ,request, user);
                     } else {
                         productRequestProducer.requestProductDetails(request.getStoreId(), productId, quantity, user.getUsername());
+                        updatedInventories.add(
+                                InventoryItemInfo.builder()
+                                        .productId(productId)
+                                        .storeId(request.getStoreId())
+                                        .quantity(quantity)
+                                        .build()
+                        );
                     }
                 }
         );

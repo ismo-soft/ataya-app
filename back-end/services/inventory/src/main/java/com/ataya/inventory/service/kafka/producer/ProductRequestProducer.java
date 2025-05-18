@@ -20,6 +20,7 @@ public class ProductRequestProducer {
     private final CorrelationStorage correlationStorage;
 
     public void requestProductDetails(String storeId, String productId, double quantity, String Username) {
+        System.out.println("Hi, I am in requestProductDetails method");
         String correlationId = UUID.randomUUID().toString();
         correlationStorage.store(correlationId, storeId, quantity);
 
