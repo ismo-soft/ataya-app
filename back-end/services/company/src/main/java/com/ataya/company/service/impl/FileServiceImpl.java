@@ -72,6 +72,9 @@ public class FileServiceImpl implements FileService {
     public List<String> saveImageFiles(List<MultipartFile> images, String product, String companyId, String id) {
         List<String> imageUrls = new ArrayList<>();
         for (MultipartFile image : images) {
+            if (image.isEmpty()) {
+                continue;
+            }
             imageUrls.add(saveImageFile(image, product, companyId, id + "-" + images.indexOf(image)));
         }
         return imageUrls;

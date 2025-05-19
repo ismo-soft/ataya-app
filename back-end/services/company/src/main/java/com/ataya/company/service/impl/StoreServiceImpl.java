@@ -203,7 +203,7 @@ public class StoreServiceImpl implements StoreService {
             );
         }
 
-        if (profilePicture != null) {
+        if (profilePicture != null && !profilePicture.isEmpty()) {
             String profilePictureFile = fileService.saveImageFile(profilePicture, "store", "profile", store.getId());
             store.setProfilePicture(profilePictureFile);
         }
