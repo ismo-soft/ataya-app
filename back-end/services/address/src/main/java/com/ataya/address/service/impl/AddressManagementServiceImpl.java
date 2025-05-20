@@ -9,6 +9,7 @@ import com.ataya.address.dto.address.request.UpdateAddressRequest;
 import com.ataya.address.enums.AddressTag;
 import com.ataya.address.exception.Custom.ResourceNotFoundException;
 import com.ataya.address.exception.Custom.ValidationException;
+import com.ataya.address.mapper.AddressMapper;
 import com.ataya.address.model.Address;
 import com.ataya.address.repository.AddressRepository;
 import com.ataya.address.service.AddressManagementService;
@@ -31,10 +32,12 @@ public class AddressManagementServiceImpl implements AddressManagementService {
     private final AddressRepository addressRepository;
 
     private final HereGeoCoderService hereGeoCoderService;
+    private final AddressMapper addressMapper;
 
-    public AddressManagementServiceImpl(AddressRepository addressRepository, HereGeoCoderService hereGeoCoderService) {
+    public AddressManagementServiceImpl(AddressRepository addressRepository, HereGeoCoderService hereGeoCoderService, AddressMapper addressMapper) {
         this.addressRepository = addressRepository;
         this.hereGeoCoderService = hereGeoCoderService;
+        this.addressMapper = addressMapper;
     }
 
     @Override
@@ -78,11 +81,12 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         );
         address.setAddressTags(tags);
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
-        addressRepository.save(address);
+        address = addressRepository.save(address);
         return ApiResponse.builder()
                 .status(HttpStatus.CREATED.getReasonPhrase())
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Address created successfully")
+                .data(addressMapper.toDto(address))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -126,6 +130,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                 .statusCode(HttpStatus.CREATED.value())
                 .message("Address created successfully")
                 .timestamp(LocalDateTime.now())
+                .data(addressMapper.toDto(address))
                 .build();
     }
 
@@ -184,6 +189,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .message("Address updated successfully")
+                .data(addressMapper.toDto(address))
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -203,7 +209,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
                 .statusCode(HttpStatus.OK.value())
                 .message("Address retrieved successfully")
                 .timestamp(LocalDateTime.now())
-                .data(address)
+                .data(addressMapper.toDto(address))
                 .build();
     }
 }
