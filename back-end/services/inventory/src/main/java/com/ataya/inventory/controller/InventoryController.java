@@ -56,12 +56,22 @@ public class InventoryController {
                                                                                           @RequestParam(required = false, name = "dis-prc") String discountedPrice,
                                                                                           @RequestParam(required = false, name = "dCnt") String discount,
                                                                                           @RequestParam(required = false, name = "dCntR") String discountRate,
+                                                                                          @RequestParam(name = "strId") String storeId,
                                                                                           @AuthenticationPrincipal User user,
                                                                                           @RequestParam (required = false, name = "pg") Integer page,
                                                                                           @RequestParam (required = false, name = "sz") Integer size,
                                                                                           @RequestParam(required = false, name = "prd") String productId){
         return ResponseEntity.ok(inventoryService.getFilteredInventoryItems(
-                quantity,price,discountedPrice ,discount,discountRate,user.getStoreId(),user.getCompanyId(),productId,page,size
+                quantity,
+                price,
+                discountedPrice,
+                discount,
+                discountRate,
+                storeId,
+                user.getCompanyId(),
+                productId,
+                page,
+                size
         ));
     }
 

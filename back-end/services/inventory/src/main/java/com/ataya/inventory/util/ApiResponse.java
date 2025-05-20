@@ -1,5 +1,6 @@
 package com.ataya.inventory.util;
 
+import com.ataya.inventory.dto.InventoryStatistics;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,4 +20,5 @@ public class ApiResponse<T> {
     private long total;
     private int totalPages;
     private T data;
+    private InventoryStatistics statistics;
 }

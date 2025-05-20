@@ -38,6 +38,7 @@ public class ProductRequestConsumer {
             productDto.setCorrelationId(request.getCorrelationId());
             productDto.setId(product.getId());
             productDto.setName(product.getName());
+            productDto.setStoreId(request.getStoreId());
             productDto.setProductCategory(product.getCategory().name());
             productDto.setBrand(product.getBrand());
 

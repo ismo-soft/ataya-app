@@ -1,6 +1,7 @@
 package com.ataya.inventory.service.impl;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
+import com.ataya.inventory.dto.InventoryStatistics;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.dto.company.ProductDto;
 import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
@@ -18,8 +19,13 @@ import com.ataya.inventory.service.StockMovementService;
 import com.ataya.inventory.service.kafka.CorrelationStorage;
 import com.ataya.inventory.service.kafka.producer.ProductRequestProducer;
 import com.ataya.inventory.util.ApiResponse;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
@@ -81,8 +87,27 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .data(inventories.stream().map(inventoryMapper::toInventoryItemInfo).toList())
                 .message("Inventory items retrieved successfully")
+                .statistics(getStatistics(storeId))
                 .build();
+    }
 
+
+
+    private InventoryStatistics getStatistics(String storeId) {
+
+        Integer allProducts = inventoryRepository.countAllByStoreId(storeId);
+        Integer inReorderLevel = inventoryRepository.countWhereReorderLevelIsGreaterThanQuantity(storeId);
+        Integer inStock = inventoryRepository.countAllByStoreIdAndQuantityGreaterThan(storeId, 0.0);
+        Integer outOfStock = inventoryRepository.countAllByStoreIdAndQuantity(storeId, 0.0);
+        Integer inDiscount = inventoryRepository.countAllInventoriesByStoreIdAndIsDiscounted(storeId, true);
+
+        return InventoryStatistics.builder()
+                .allProducts(allProducts)
+                .inReorderLevel(inReorderLevel)
+                .inStock(inStock)
+                .outOfStock(outOfStock)
+                .inDiscount(inDiscount)
+                .build();
     }
 
     @Override
@@ -374,7 +399,7 @@ public class InventoryServiceImpl implements InventoryService {
         List<InventoryItemInfo> updatedInventories = new ArrayList<>();
         request.getProduct_quantity().forEach(
                 (productId, quantity) -> {
-                    if (quantity <= 0) {
+                    if (quantity < 0) {
                         throw new ValidationException("productId", quantity, "Quantity cannot be negative");
                     }
                     Optional<Inventory> inventoryOpt = inventoryRepository.findByProductIdAndStoreId(productId, request.getStoreId());
@@ -419,7 +444,7 @@ public class InventoryServiceImpl implements InventoryService {
         double quantity = correlationStorage.getQuantity(productDto.getCorrelationId());
 
         Inventory inventory = Inventory.builder()
-                .storeId(StoreId)
+                .storeId(productDto.getStoreId())
                 .productId(productDto.getId())
                 .companyId(productDto.getCompanyId())
                 .productName(productDto.getName())
