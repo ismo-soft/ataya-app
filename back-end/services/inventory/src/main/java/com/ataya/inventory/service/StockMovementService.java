@@ -12,9 +12,9 @@ import java.util.List;
 
 public interface StockMovementService {
 
-    void addSupplyMove(String inventoryId,double quantity, SupplyRequest request, User user);
+    void addSupplyMove(String inventoryId,double quantity, String storeId, String note, String reason, String user);
 
-    void addCreateInventoryMove(String inventoryId, ProductDto productDto, double quantity, String storeId);
+    void addCreateInventoryMove(String inventoryId, double quantity, String storeId, String username);
 
     void editInventoryItemQuantity(EditQuantityRequest request,double quantityDifferent, String username);
 

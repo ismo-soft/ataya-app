@@ -15,17 +15,11 @@ import com.ataya.inventory.model.Inventory;
 import com.ataya.inventory.model.User;
 import com.ataya.inventory.repo.InventoryRepository;
 import com.ataya.inventory.service.InventoryService;
+import com.ataya.inventory.service.RestService;
 import com.ataya.inventory.service.StockMovementService;
-import com.ataya.inventory.service.kafka.CorrelationStorage;
-import com.ataya.inventory.service.kafka.producer.ProductRequestProducer;
 import com.ataya.inventory.util.ApiResponse;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
@@ -44,8 +38,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryMapper inventoryMapper;
     private final InventoryRepository inventoryRepository;
     private final StockMovementService stockMovementService;
-    private final ProductRequestProducer productRequestProducer;
-    private final CorrelationStorage correlationStorage;
+    private final RestService restService;
 
 
 
@@ -384,89 +377,100 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user) {
-        System.out.println("Hi, I am in supplyInventoryItems");
         if (user.getCompanyId() == null) {
             throw new InvalidOperationException(
-                    "supply Inventory Item", "not authorized"
+                    "supply Inventory Items", "not authorized"
             );
         }
-        if (user.getStoreId() != null && !user.getStoreId().equals(request.getStoreId())) {
+        if (user.getStoreId() != null && user.getStoreId().equals(request.getStoreId())) {
             throw new InvalidOperationException(
-                    "supply Inventory Item", "not authorized"
+                    "supply Inventory Items", "not authorized"
             );
         }
-        List<InventoryItemInfo> updatedInventories = new ArrayList<>();
-        request.getProduct_quantity().forEach(
-                (productId, quantity) -> {
-                    if (quantity < 0) {
-                        throw new ValidationException("productId", quantity, "Quantity cannot be negative");
-                    }
-                    Optional<Inventory> inventoryOpt = inventoryRepository.findByProductIdAndStoreId(productId, request.getStoreId());
-                    if (inventoryOpt.isPresent()) {
-                        Inventory inventory = inventoryOpt.get();
-                        if (inventory.getCompanyId() == null || !inventory.getCompanyId().equals(user.getCompanyId())) {
-                            throw new InvalidOperationException(
-                                    "supply Inventory Item", "not authorized"
-                            );
-                        }
-                        inventory.setQuantity(inventory.getQuantity() + quantity);
-                        inventory.setLastSupplyQuantity(quantity);
-                        inventory.setUpdatedAt(LocalDateTime.now());
-                        inventory.setUpdatedBy(user.getUsername());
-                        inventory = inventoryRepository.save(inventory);
-                        updatedInventories.add(inventoryMapper.toInventoryItemInfo(inventory));
-                        stockMovementService.addSupplyMove(inventory.getId(),quantity ,request, user);
-                    } else {
-                        productRequestProducer.requestProductDetails(request.getStoreId(), productId, quantity, user.getUsername());
-                        updatedInventories.add(
-                                InventoryItemInfo.builder()
-                                        .productId(productId)
-                                        .storeId(request.getStoreId())
-                                        .quantity(quantity)
-                                        .build()
-                        );
-                    }
+        if (request.getProduct_quantity() == null || request.getProduct_quantity().isEmpty()) {
+            throw new ValidationException("supplyItems", request.getProduct_quantity(), "Supply items cannot be null or empty");
+        }
+
+        createInventoriesForNotExistProducts(request.getProduct_quantity(), request.getReason(), request.getNote(), user.getCompanyId(), request.getStoreId(), user.getUsername());
+
+        List<InventoryItemInfo> suppliedInventories = new ArrayList<>();
+        for (String prdId : request.getProduct_quantity().keySet()) {
+            Optional<Inventory> inventoryOpt = inventoryRepository.findByProductIdAndStoreIdAndCompanyId(prdId, request.getStoreId(), user.getCompanyId());
+            if (inventoryOpt.isPresent()) {
+                Inventory inventory = inventoryOpt.get();
+                Double quantity = request.getProduct_quantity().get(prdId);
+                if (quantity == null || quantity <= 0) {
+                    throw new ValidationException("quantity", quantity, "Quantity cannot be null or negative");
                 }
-        );
+                setQuantity(inventory, inventory.getQuantity() + quantity);
+                inventory.setUpdatedAt(LocalDateTime.now());
+                inventory.setUpdatedBy(user.getUsername());
+                inventoryRepository.save(inventory);
+                stockMovementService.addSupplyMove(inventory.getId(), quantity, request.getStoreId(), request.getNote(), request.getReason(), user.getUsername());
+                suppliedInventories.add(inventoryMapper.toInventoryItemInfo(inventory));
+            } else {
+                throw new ResourceNotFoundException(
+                        "Inventory Item", "product", prdId + " not found in store "
+                );
+            }
+
+        }
+
         return ApiResponse.<List<InventoryItemInfo>>builder()
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .timestamp(LocalDateTime.now())
-                .data(updatedInventories)
-                .message("Inventory item updated successfully")
+                .data(suppliedInventories)
+                .message("Inventory items supplied successfully")
                 .build();
     }
+
 
     @Override
-    public void createInventoryFromProductDto(ProductDto productDto) {
-        String StoreId = correlationStorage.getStoreId(productDto.getCorrelationId());
-        double quantity = correlationStorage.getQuantity(productDto.getCorrelationId());
-
-        Inventory inventory = Inventory.builder()
-                .storeId(productDto.getStoreId())
-                .productId(productDto.getId())
-                .companyId(productDto.getCompanyId())
-                .productName(productDto.getName())
-                .productBrand(productDto.getBrand())
-                .productCategory(productDto.getProductCategory())
-                .quantity(quantity)
-                .reorderLevel(10.0)
-                .lastSupplyQuantity(0.0)
-                .unit(ItemUnit.PIECE)
-                .price(0.1)
-                .discount(0.0)
-                .discountRate(0.0)
-                .discountedPrice(0.0)
-                .isDiscounted(false)
-                .updatedBy(productDto.getUsername())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        inventory =  inventoryRepository.save(inventory);
-        stockMovementService.addCreateInventoryMove(inventory.getId() ,productDto, quantity, StoreId);
-        correlationStorage.remove(productDto.getCorrelationId());
+    public void createInventoriesForNotExistProducts(Map<String, Double> prdIdQuantityMap, String reason, String note, String companyId, String storeId, String user) {
+        String notExistsProducts = "";
+        for (String prdId : prdIdQuantityMap.keySet()) {
+            if (!inventoryRepository.existsByProductIdAndStoreId(prdId, storeId)) {
+                notExistsProducts = notExistsProducts + prdId + ",";
+            }
+        }
+        if (notExistsProducts.isEmpty()) {
+            return; // All products already exist in the inventory
+        }
+        List<ProductDto> products = restService.getProductDtos(notExistsProducts, companyId);
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "Product", "product", notExistsProducts + " not found in company "
+            );
+        }
+        if (products.size() != prdIdQuantityMap.size()) {
+            throw new ResourceNotFoundException(
+                    "Product", "product", notExistsProducts + " not found in company "
+            );
+        }
+        for (ProductDto product : products) {
+            Inventory inventory = Inventory.builder()
+                    .productId(product.getId())
+                    .storeId(storeId)
+                    .companyId(companyId)
+                    .productName(product.getName())
+                    .productCategory(product.getCategory())
+                    .productBrand(product.getBrand())
+                    .quantity(0.0)
+                    .reorderLevel(0.0)
+                    .lastSupplyQuantity(0.0)
+                    .price(0.0)
+                    .discount(0.0)
+                    .discountRate(0.0)
+                    .discountedPrice(0.0)
+                    .isDiscounted(false)
+                    .build();
+            inventoryRepository.save(inventory);
+            stockMovementService.addCreateInventoryMove(inventory.getId(), prdIdQuantityMap.get(product.getId()), storeId, user);
+        }
     }
-
 
     private void setDiscount(Inventory inventory, Double discount, Double discountRate) {
         if (discount != null) {
@@ -529,6 +533,7 @@ public class InventoryServiceImpl implements InventoryService {
             throw new ValidationException("productId", prdIds, "Product id cannot be null");
         }
     }
+
     private List<Inventory> fetchInventoryByProductIdAndStoreId(Set<String> productIds, String storeId1) {
         List<Inventory> inventories = inventoryRepository.findByProductIdInAndStoreId(productIds, storeId1);
         if (inventories.isEmpty()) {

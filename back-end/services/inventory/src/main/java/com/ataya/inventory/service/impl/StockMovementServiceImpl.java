@@ -1,14 +1,11 @@
 package com.ataya.inventory.service.impl;
 
-import com.ataya.inventory.dto.company.ProductDto;
 import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
 import com.ataya.inventory.dto.stockMovement.GetMovementsParameters;
 import com.ataya.inventory.dto.stockMovement.MovementInfo;
-import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.enums.MovementType;
 import com.ataya.inventory.exception.custom.InvalidOperationException;
 import com.ataya.inventory.model.StockMovement;
-import com.ataya.inventory.model.User;
 import com.ataya.inventory.repo.StockMovementRepository;
 import com.ataya.inventory.service.StockMovementService;
 import com.ataya.inventory.util.ApiResponse;
@@ -22,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static com.ataya.inventory.service.impl.CommonService.addCriteria;
 import static com.ataya.inventory.service.impl.CommonService.addCriteriaWithDateRange;
@@ -34,23 +30,24 @@ public class StockMovementServiceImpl implements StockMovementService {
     private final StockMovementRepository stockMovementRepository;
 
     @Override
-    public void addSupplyMove(String inventoryId,double quantity, SupplyRequest request, User user) {
+    public void addSupplyMove(String inventoryId,double quantity, String storeId, String note, String reason, String user) {
         System.out.println("Hi, I am in addSupplyMove method");
         StockMovement sm = StockMovement.builder()
                 .inventoryId(inventoryId)
                 .type(MovementType.INCOMING)
-                .storeId(request.getStoreId())
+                .storeId(storeId)
                 .quantity(quantity)
-                .note(request.getNote())
-                .reason(request.getReason())
+                .note(note)
+                .reason(reason)
                 .happenedAt(LocalDateTime.now())
-                .by(user.getUsername())
+                .by(user)
                 .build();
         stockMovementRepository.save(sm);
     }
 
     @Override
-    public void addCreateInventoryMove(String inventoryId, ProductDto productDto, double quantity, String storeId) {
+    public void addCreateInventoryMove(String inventoryId, double quantity, String storeId, String user) {
+        System.out.println("Hi, I am in addCreateInventoryMove method");
         StockMovement sm = StockMovement.builder()
                 .inventoryId(inventoryId)
                 .type(MovementType.NEW)
@@ -62,13 +59,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                 .by("System")
                 .build();
         stockMovementRepository.save(sm);
-        User user = User.builder().username(productDto.getUsername()).build();
-        SupplyRequest supplyRequest = SupplyRequest.builder()
-                .storeId(storeId)
-                .note("first supply")
-                .reason("first supply")
-                .build();
-        addSupplyMove(inventoryId, quantity, supplyRequest, user);
+
     }
 
     @Override

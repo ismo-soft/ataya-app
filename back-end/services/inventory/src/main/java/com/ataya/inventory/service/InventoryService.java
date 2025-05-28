@@ -1,6 +1,7 @@
 package com.ataya.inventory.service;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
+import com.ataya.inventory.dto.InventoryStatistics;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.dto.company.ProductDto;
 import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
@@ -33,5 +34,5 @@ public interface InventoryService {
 
     ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user);
 
-    void createInventoryFromProductDto(ProductDto productDto);
+    void createInventoriesForNotExistProducts(Map<String, Double> prdIdQuantityMap, String reason, String note, String companyId, String storeId, String user);
 }

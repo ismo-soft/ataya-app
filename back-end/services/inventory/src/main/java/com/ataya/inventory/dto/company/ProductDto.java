@@ -13,10 +13,7 @@ import java.util.List;
 public class ProductDto {
     private String id;
     private String name;
-    private String productCategory;
+    private String category;
     private String brand;
     private String companyId;
-    private String storeId;
-    private String correlationId;
-    private String username;
 }

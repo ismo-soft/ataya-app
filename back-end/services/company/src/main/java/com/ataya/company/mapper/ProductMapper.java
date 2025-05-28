@@ -1,5 +1,6 @@
 package com.ataya.company.mapper;
 
+import com.ataya.company.dto.product.ProductDto;
 import com.ataya.company.dto.product.ProductInfoResponse;
 import com.ataya.company.model.Product;
 import org.mapstruct.Mapper;
@@ -12,4 +13,6 @@ public interface ProductMapper {
     ProductInfoResponse toProductInfoResponse(Product product);
 
     List<ProductInfoResponse> toProductInfoResponseList(List<Product> products);
+
+    ProductDto toProductDto(Product product);
 }

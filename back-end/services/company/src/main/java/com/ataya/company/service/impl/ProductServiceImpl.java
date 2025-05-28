@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.ataya.company.service.impl.CommonService.addCriteria;
 
@@ -228,6 +229,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getProductEntityById(String productId) {
         return productRepository.findById(productId).orElse(null);
+    }
+
+    @Override
+    public List<ProductDto> getProductDtos(String ids, String companyId) {
+        if(ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Set<String> idSet = Set.of(ids.split(","));
+        List<Product> products = productRepository.findAllByIdInAndCompanyId(idSet, companyId);
+        if(products.isEmpty()) {
+            return List.of();
+        }
+        List<ProductDto> productDtos = new ArrayList<>();
+        for (Product product : products) {
+            if(product.getCompanyId().equals(companyId)) {
+                productDtos.add(productMapper.toProductDto(product));
+            }
+        }
+        return productDtos;
     }
 
 

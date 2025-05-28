@@ -28,4 +28,8 @@ public interface InventoryRepository extends MongoRepository<Inventory, String>,
 
     @Query(value = "{'storeId': ?0, '$expr': { '$and': [ { '$gt': ['$reorderLevel', '$quantity'] }, { '$gt': ['$quantity', 0] } ] }}", count = true)
     Integer countWhereReorderLevelIsGreaterThanQuantity(String storeId);
+
+    Optional<Inventory> findByProductIdAndStoreIdAndCompanyId(String id, String storeId, String companyId);
+
+    boolean existsByProductIdAndStoreId(String id, String storeId);
 }
