@@ -19,7 +19,7 @@ public class ContributorDto {
     private String profilePhoto;
     private String bio;
     private LocalDate registrationDate;
-    private String totalContributions;
+    private Integer totalContributions;
     private Boolean enabled;
 
 }

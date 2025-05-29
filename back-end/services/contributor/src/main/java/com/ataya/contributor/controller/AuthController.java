@@ -3,17 +3,17 @@ package com.ataya.contributor.controller;
 import com.ataya.contributor.dto.user.ContributorDto;
 import com.ataya.contributor.dto.user.CredentialRequest;
 import com.ataya.contributor.dto.user.LoginResponse;
+import com.ataya.contributor.model.Contributor;
 import com.ataya.contributor.service.AuthService;
 import com.ataya.contributor.util.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/Auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -37,15 +37,15 @@ public class AuthController {
     // update user
     @PutMapping("/update")
     @Operation(summary = "Update user details")
-    public ResponseEntity<ApiResponse<ContributorDto>> updateUser(@RequestBody ContributorDto contributorDto, @AuthenticationPrincipal String id) {
-        return ResponseEntity.ok(authService.updateUser(id, contributorDto));
+    public ResponseEntity<ApiResponse<ContributorDto>> updateUser(@RequestBody ContributorDto contributorDto, @AuthenticationPrincipal Contributor user) {
+        return ResponseEntity.ok(authService.updateUser(user.getId(), contributorDto));
     }
 
     // get user profile
      @GetMapping("/profile")
     @Operation(summary = "Get user profile")
-    public ResponseEntity<ApiResponse<ContributorDto>> getUserProfile(@AuthenticationPrincipal String id) {
-        return ResponseEntity.ok(authService.getUserProfile(id));
+    public ResponseEntity<ApiResponse<ContributorDto>> getUserProfile(@AuthenticationPrincipal Contributor user) {
+        return ResponseEntity.ok(authService.getUserProfile(user.getId()));
 
     }
 

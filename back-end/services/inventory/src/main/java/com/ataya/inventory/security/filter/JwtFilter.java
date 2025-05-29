@@ -41,7 +41,8 @@ public class JwtFilter extends OncePerRequestFilter {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/swagger-ui/**",
-            "/debug/public/**"
+            "/debug/public/**",
+            "/service-communication/**"
     );
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();

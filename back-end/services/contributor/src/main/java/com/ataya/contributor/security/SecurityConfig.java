@@ -2,6 +2,7 @@ package com.ataya.contributor.security;
 
 import com.ataya.contributor.security.filter.JwtAuthenticationFilter;
 import com.ataya.contributor.security.service.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,13 +29,11 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthFilter;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -55,8 +54,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/auth/register",
                                 "/auth/login",
-                                "/auth/**",
-                                "/company/image/**"
+                                "/service-communication/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

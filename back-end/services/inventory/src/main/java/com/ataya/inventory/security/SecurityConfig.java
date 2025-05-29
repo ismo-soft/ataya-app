@@ -48,7 +48,9 @@ public class SecurityConfig {
                                 // Public API endpoints
                                 "/api/public/**",
                                 "/api/auth/**",
-                                "/debug/public/**"
+                                "/debug/public/**",
+
+                                "/service-communication/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

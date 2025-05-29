@@ -244,7 +244,17 @@ public class ProductServiceImpl implements ProductService {
         List<ProductDto> productDtos = new ArrayList<>();
         for (Product product : products) {
             if(product.getCompanyId().equals(companyId)) {
-                productDtos.add(productMapper.toProductDto(product));
+                productDtos.add(
+                    ProductDto.builder()
+                            .id(product.getId())
+                            .name(product.getName())
+                            .category(product.getCategory().name())
+                            .brand(product.getBrand())
+                            .companyId(product.getCompanyId())
+                            .imageUrl(product.getImages().get(0))
+                            .build()
+
+                );
             }
         }
         return productDtos;

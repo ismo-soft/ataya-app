@@ -29,7 +29,7 @@ public class Contributor implements UserDetails {
     private String bio;
     private Date birthday;
     private LocalDate registrationDate;
-    private String totalContributions;
+    private Integer totalContributions;
     private Boolean enabled;
 
     @Override

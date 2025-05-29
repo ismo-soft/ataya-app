@@ -465,6 +465,7 @@ public class InventoryServiceImpl implements InventoryService {
                     .discount(0.0)
                     .discountRate(0.0)
                     .discountedPrice(0.0)
+                    .productImageUrl(product.getImageUrl())
                     .isDiscounted(false)
                     .build();
             inventoryRepository.save(inventory);

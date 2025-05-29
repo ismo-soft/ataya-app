@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -28,10 +29,11 @@ public class AuthServiceImpl implements AuthService {
     public ApiResponse<ContributorDto> registerUser(CredentialRequest request) {
 
         if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            System.out.println("Email is required: " + request.getEmail());
             throw new ValidationException(
-                    "username",
-                    request.getEmail(),
-                    "Username is required"
+                    "email",
+                    "null",
+                    "email is required"
             );
         }
 
@@ -52,6 +54,7 @@ public class AuthServiceImpl implements AuthService {
         ContributorDto contributorDto = ContributorDto.builder()
                 .id(savedContributor.getId())
                 .email(savedContributor.getEmail())
+                .registrationDate(LocalDate.now())
                 .enabled(savedContributor.isEnabled())
                 .build();
 
@@ -133,6 +136,12 @@ public class AuthServiceImpl implements AuthService {
             contributor.setBio(contributorDto.getBio());
         }
 
+        if (contributorDto.getProfilePhoto() != null) {
+            contributor.setProfilePhoto(contributorDto.getProfilePhoto());
+        }
+
+
+
         Contributor updatedContributor = contributorRepository.save(contributor);
         ContributorDto updatedContributorDto = ContributorDto.builder()
                 .id(updatedContributor.getId())
@@ -158,6 +167,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse<ContributorDto> getUserProfile(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new ValidationException(
+                    "id",
+                    "null",
+                    "User ID is required"
+            );
+        }
+
         Contributor contributor = contributorRepository.findById(id)
                 .orElseThrow(() -> new ValidationException(
                         "id",

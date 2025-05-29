@@ -32,4 +32,7 @@ public interface InventoryRepository extends MongoRepository<Inventory, String>,
     Optional<Inventory> findByProductIdAndStoreIdAndCompanyId(String id, String storeId, String companyId);
 
     boolean existsByProductIdAndStoreId(String id, String storeId);
+
+    @Query(value = "{'storeId': ?0, '$expr': { '$gt': ['$quantity', '$reorderLevel'] }}")
+    List<Inventory> findByStoreIdAndQuantityGreaterThanReorderLevel(String storeId);
 }
