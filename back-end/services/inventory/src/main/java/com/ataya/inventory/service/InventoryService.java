@@ -35,4 +35,8 @@ public interface InventoryService {
     ApiResponse<List<InventoryItemInfo>> supplyInventoryItems(SupplyRequest request, User user);
 
     void createInventoriesForNotExistProducts(Map<String, Double> prdIdQuantityMap, String reason, String note, String companyId, String storeId, String user);
+
+    void suspendItem(String itemId, Double quantity);
+
+    void releaseSuspendedItem(String itemId, Double quantity);
 }

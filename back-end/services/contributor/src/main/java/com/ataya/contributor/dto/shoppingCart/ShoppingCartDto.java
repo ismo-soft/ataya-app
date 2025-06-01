@@ -1,8 +1,9 @@
 package com.ataya.contributor.dto.shoppingCart;
 
-
-import com.ataya.contributor.enums.ShoppingCartStatus;
+import com.ataya.contributor.model.CartItem;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,10 +13,6 @@ import lombok.*;
 public class ShoppingCartDto {
     private String id;
     private String customerId;
-    private String createdAt;
-    private String updatedAt;
-    private String closedAt;
-    private ShoppingCartStatus status;
-    private String totalAmount;
-    private String items;
+    private Double totalAmount;
+    private List<CartItem> items;
 }

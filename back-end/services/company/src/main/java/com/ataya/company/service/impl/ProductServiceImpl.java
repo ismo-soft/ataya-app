@@ -1,6 +1,7 @@
 package com.ataya.company.service.impl;
 
 import com.ataya.company.dto.product.*;
+import com.ataya.company.dto.store.StoreDto;
 import com.ataya.company.enums.ProductCategory;
 import com.ataya.company.exception.custom.InvalidOperationException;
 import com.ataya.company.exception.custom.ResourceNotFoundException;
@@ -70,6 +71,8 @@ public class ProductServiceImpl implements ProductService {
         if(images != null && !images.isEmpty()) {
             List<String> imageUrls = fileService.saveImageFiles(images, "product", user.getCompanyId(), product.getId());
             product.setImages(imageUrls);
+        } else {
+            product.setImages(List.of());
         }
         productRepository.save(product);
         return ApiResponse.<ProductInfoResponse>builder()
@@ -244,21 +247,21 @@ public class ProductServiceImpl implements ProductService {
         List<ProductDto> productDtos = new ArrayList<>();
         for (Product product : products) {
             if(product.getCompanyId().equals(companyId)) {
-                productDtos.add(
-                    ProductDto.builder()
-                            .id(product.getId())
-                            .name(product.getName())
-                            .category(product.getCategory().name())
-                            .brand(product.getBrand())
-                            .companyId(product.getCompanyId())
-                            .imageUrl(product.getImages().get(0))
-                            .build()
-
-                );
+                String imageUrl = (product.getImages() != null && !product.getImages().isEmpty()) ? product.getImages().get(0) : "";
+                ProductDto productDto = ProductDto.builder()
+                        .id(product.getId())
+                        .name(product.getName())
+                        .category(product.getCategory().name())
+                        .brand(product.getBrand())
+                        .companyId(product.getCompanyId())
+                        .imageUrl(imageUrl)
+                        .build();
+                productDtos.add(productDto);
             }
         }
         return productDtos;
     }
+
 
 
 }

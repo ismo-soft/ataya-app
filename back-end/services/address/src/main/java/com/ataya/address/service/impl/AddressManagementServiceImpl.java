@@ -81,6 +81,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         );
         address.setAddressTags(tags);
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
+        address.setBelongsTo(request.getBelongsTo());
         address = addressRepository.save(address);
         return ApiResponse.builder()
                 .status(HttpStatus.CREATED.getReasonPhrase())
@@ -124,6 +125,7 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         );
         address.setAddressTags(tags);
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
+        address.setBelongsTo(request.getBelongsTo());
         addressRepository.save(address);
         return ApiResponse.builder()
                 .status(HttpStatus.CREATED.getReasonPhrase())

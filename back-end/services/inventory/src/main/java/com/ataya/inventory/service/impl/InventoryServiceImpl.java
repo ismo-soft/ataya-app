@@ -431,9 +431,11 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public void createInventoriesForNotExistProducts(Map<String, Double> prdIdQuantityMap, String reason, String note, String companyId, String storeId, String user) {
         String notExistsProducts = "";
+        int notExistsCount = 0;
         for (String prdId : prdIdQuantityMap.keySet()) {
             if (!inventoryRepository.existsByProductIdAndStoreId(prdId, storeId)) {
                 notExistsProducts = notExistsProducts + prdId + ",";
+                notExistsCount++;
             }
         }
         if (notExistsProducts.isEmpty()) {
@@ -445,7 +447,8 @@ public class InventoryServiceImpl implements InventoryService {
                     "Product", "product", notExistsProducts + " not found in company "
             );
         }
-        if (products.size() != prdIdQuantityMap.size()) {
+        if (products.size() != notExistsCount) {
+            System.out.println("Expected count: " + notExistsCount + ", Found count: " + products.size());
             throw new ResourceNotFoundException(
                     "Product", "product", notExistsProducts + " not found in company "
             );
@@ -471,6 +474,38 @@ public class InventoryServiceImpl implements InventoryService {
             inventoryRepository.save(inventory);
             stockMovementService.addCreateInventoryMove(inventory.getId(), prdIdQuantityMap.get(product.getId()), storeId, user);
         }
+    }
+
+    @Override
+    public void suspendItem(String itemId, Double quantity) {
+        Inventory inventory = inventoryRepository.findById(itemId).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Inventory Item", "id", itemId + " not found"
+                )
+        );
+        if (inventory.getQuantity() < quantity) {
+            throw new ValidationException("quantity", quantity, "Quantity cannot be greater than available quantity");
+        }
+
+        inventory.setQuantity(inventory.getQuantity() - quantity);
+        inventory.setSuspendedQuantity(inventory.getSuspendedQuantity() + quantity);
+
+        inventoryRepository.save(inventory);
+        stockMovementService.insertSuspendItemMovement(itemId, quantity, inventory.getStoreId(), "system");
+    }
+
+    @Override
+    public void releaseSuspendedItem(String itemId, Double quantity) {
+        Inventory inventory = inventoryRepository.findById(itemId).orElseThrow(
+                () -> new ResourceNotFoundException(
+                        "Inventory Item", "id", itemId + " not found"
+                )
+        );
+
+        inventory.setQuantity(inventory.getQuantity() + quantity);
+        inventory.setSuspendedQuantity(inventory.getSuspendedQuantity() - quantity);
+
+        inventoryRepository.save(inventory);
     }
 
     private void setDiscount(Inventory inventory, Double discount, Double discountRate) {

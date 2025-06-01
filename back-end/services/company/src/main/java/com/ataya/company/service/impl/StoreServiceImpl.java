@@ -1,5 +1,6 @@
 package com.ataya.company.service.impl;
 
+import com.ataya.company.dto.store.StoreDto;
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
 import com.ataya.company.dto.store.response.StoreDetailsResponse;
@@ -15,6 +16,7 @@ import com.ataya.company.service.FileService;
 import com.ataya.company.service.StoreService;
 import com.ataya.company.service.WorkerService;
 import com.ataya.company.util.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -32,21 +34,14 @@ import java.util.Map;
 import static com.ataya.company.service.impl.CommonService.addCriteria;
 
 @Service
+@RequiredArgsConstructor
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
     private final WorkerService workerService;
     private final FileService fileService;
-    private final CommonService commonService;
 
-    public StoreServiceImpl(StoreRepository storeRepository, StoreMapper storeMapper, WorkerService workerService, FileService fileService, CommonService commonService) {
-        this.storeRepository = storeRepository;
-        this.storeMapper = storeMapper;
-        this.workerService = workerService;
-        this.fileService = fileService;
-        this.commonService = commonService;
-    }
 
     @Override
     public Store getStoreById(String storeId) {
@@ -276,5 +271,28 @@ public class StoreServiceImpl implements StoreService {
                 .status(StoreStatus.INACTIVE)
                 .build();
         store = storeRepository.save(store);
+    }
+
+    @Override
+    public List<StoreDto> getAllStoresAsDto() {
+        List<Store> stores = storeRepository.findAll();
+        if (stores.isEmpty()) {
+            throw new ResourceNotFoundException("Store", "id", "No stores found", "No stores available in the system");
+        }
+        return storeMapper.toStoreDtoList(stores);
+    }
+
+    @Override
+    public StoreDto getStoreByIdAsDto(String storeId) {
+        Store store = this.getStoreById(storeId);
+        if (store == null) {
+            throw new ResourceNotFoundException(
+                    "Store",
+                    "id",
+                    storeId,
+                    "Store not found"
+            );
+        }
+        return storeMapper.toStoreDto(store);
     }
 }

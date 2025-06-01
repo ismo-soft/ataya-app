@@ -19,4 +19,5 @@ public class CreateAddressRequest {
     private String postalCode;
     private String addressDetails;
     private List<String> addressTags;
+    private String belongsTo;
 }

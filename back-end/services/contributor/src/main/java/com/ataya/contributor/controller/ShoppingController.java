@@ -3,6 +3,7 @@ package com.ataya.contributor.controller;
 
 import com.ataya.contributor.dto.product.ProductItemDto;
 import com.ataya.contributor.dto.shoppingCart.ShoppingCartDto;
+import com.ataya.contributor.dto.store.StoreDto;
 import com.ataya.contributor.model.Contributor;
 import com.ataya.contributor.service.ShoppingService;
 import com.ataya.contributor.util.ApiResponse;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/shopping")
@@ -25,15 +27,26 @@ public class ShoppingController {
     // get products
     @GetMapping("/products")
     @Operation(summary = "Get all products")
-    private ResponseEntity<ApiResponse<List<ProductItemDto>>> getProducts(@RequestParam(name = "strId") String storeId) {
-        return ResponseEntity.ok( shoppingService.getProducts(storeId));
+    private ResponseEntity<ApiResponse<List<ProductItemDto>>> getProducts(
+            @RequestParam(name = "strId") String storeId,
+            @RequestParam(name = "nm", required = false) String name,
+            @RequestParam(name = "cat", required = false) String category,
+            @RequestParam(name = "min", required = false) Double minPrice,
+            @RequestParam(name = "max", required = false) Double maxPrice,
+            @RequestParam(required = false) String brand,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                shoppingService.getProducts(storeId, name, category, minPrice, maxPrice, brand, page, size)
+        );
     }
 
     // put products in basket
     @PutMapping("/cart")
     @Operation(summary = "Add products to cart")
-    private ResponseEntity<ApiResponse<ShoppingCartDto>> addToCart(@RequestBody List<String> items, @AuthenticationPrincipal String id) {
-        return ResponseEntity.ok(shoppingService.addToCart(id, items));
+    private ResponseEntity<ApiResponse<String>> addToCart(@RequestParam String itemId, @RequestParam Double quantity, @AuthenticationPrincipal Contributor user) {
+        return ResponseEntity.ok(shoppingService.addToCart(user.getId(), itemId, quantity));
     }
 
     // get cart items
@@ -46,8 +59,21 @@ public class ShoppingController {
     // remove item from cart
     @DeleteMapping("/cart/{itemId}")
     @Operation(summary = "Remove item from cart")
-    private ResponseEntity<ApiResponse<ShoppingCartDto>> removeItemFromCart(@PathVariable String itemId, @AuthenticationPrincipal Contributor user) {
-        return ResponseEntity.ok(shoppingService.removeItemFromCart(user.getId(), itemId));
+    private ResponseEntity<ApiResponse<String>> removeItemFromCart(@RequestParam String itemId, @RequestParam Double quantity, @AuthenticationPrincipal Contributor user) {
+        return ResponseEntity.ok(shoppingService.removeItemFromCart(user.getId(), quantity, itemId));
     }
 
+    // get all stores
+    @GetMapping("/stores")
+    @Operation(summary = "Get all stores")
+    private ResponseEntity<ApiResponse<List<StoreDto>>> getAllStores() {
+        return ResponseEntity.ok(shoppingService.getAllStores());
+    }
+
+    @GetMapping("/store/{storeId}")
+    @Operation(summary = "Get store by ID")
+    private ResponseEntity<ApiResponse<StoreDto>> getStoreById(@PathVariable String storeId) {
+        return ResponseEntity.ok(shoppingService.getStoreById(storeId));
+
+    }
 }

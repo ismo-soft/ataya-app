@@ -126,5 +126,20 @@ public class StockMovementServiceImpl implements StockMovementService {
                 .build();
     }
 
+    @Override
+    public void insertSuspendItemMovement(String itemId, Double quantity, String storeId, String system) {
+        StockMovement sm = StockMovement.builder()
+                .inventoryId(itemId)
+                .type(MovementType.SUSPEND)
+                .storeId(storeId)
+                .quantity(quantity)
+                .note("Item suspended from inventory")
+                .reason("Suspension by " + system)
+                .happenedAt(LocalDateTime.now())
+                .by(system)
+                .build();
+        stockMovementRepository.save(sm);
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package com.ataya.company.service;
 
 import com.ataya.company.dto.product.*;
+import com.ataya.company.dto.store.StoreDto;
 import com.ataya.company.model.Product;
 import com.ataya.company.model.Worker;
 import com.ataya.company.util.ApiResponse;

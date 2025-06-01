@@ -31,6 +31,7 @@ public class AddressMapper {
                 .lat(address.getLat())
                 .lng(address.getLng())
                 .location(address.getLocation())
+                .belongsTo(address.getBelongsTo())
                 .build();
 
     }

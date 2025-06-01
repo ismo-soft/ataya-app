@@ -1,15 +1,13 @@
 package com.ataya.company.controller;
 
 import com.ataya.company.dto.product.ProductDto;
+import com.ataya.company.dto.store.StoreDto;
 import com.ataya.company.service.ProductService;
+import com.ataya.company.service.StoreService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/service-communication")
@@ -17,6 +15,7 @@ import java.util.Set;
 public class ServiceCommunicationController {
 
     private final ProductService productService;
+    private final StoreService storeService;
 
 
     @GetMapping("/products")
@@ -26,5 +25,17 @@ public class ServiceCommunicationController {
     ) {
         return productService.getProductDtos(ids, companyId);
 
+    }
+
+    // get all stores
+    @GetMapping("/stores")
+    public List<StoreDto> getAllStores() {
+        return storeService.getAllStoresAsDto();
+    }
+
+    // get store by id
+    @GetMapping("/store/{storeId}")
+    public StoreDto getStoreById(@PathVariable String storeId) {
+        return storeService.getStoreByIdAsDto(storeId);
     }
 }

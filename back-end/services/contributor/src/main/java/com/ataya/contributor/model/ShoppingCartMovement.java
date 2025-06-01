@@ -17,6 +17,7 @@ public class ShoppingCartMovement {
     private String id;
     private String itemId;
     private String shoppingCartId;
+    private Double quantity;
     private ShoppingCartMovementType movement;
     private String happenedAt;
 }

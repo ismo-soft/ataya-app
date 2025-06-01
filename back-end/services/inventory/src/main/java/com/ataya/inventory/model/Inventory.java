@@ -25,6 +25,7 @@ public class Inventory {
     private String productBrand;
     private String productImageUrl;
     private Double quantity;
+    private Double suspendedQuantity;
     private Double reorderLevel;
     private Double lastSupplyQuantity;
     private ItemUnit unit;

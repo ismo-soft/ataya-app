@@ -14,4 +14,5 @@ public class CreateAddressByCoordinatesRequest {
     private Double lng;
     private String addressDetails;
     private List<String> addressTags;
+    private String belongsTo;
 }

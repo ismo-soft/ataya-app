@@ -1,9 +1,11 @@
 package com.ataya.contributor.enums;
 
 public enum ShoppingCartMovementType {
-    CREATE,
+    NEW,
     ADD,
     REMOVE,
+    INCREASE_QUANTITY,
+    DECREASE_QUANTITY,
     POST;
 
     public static ShoppingCartMovementType fromString(String type) {

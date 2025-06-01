@@ -30,4 +30,5 @@ public class AddressInfoResponse {
     private Double lat;
     private Double lng;
     private GeoJsonPoint location;
+    private String belongsTo;
 }

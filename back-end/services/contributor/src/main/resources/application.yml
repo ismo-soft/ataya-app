@@ -27,6 +27,8 @@ ataya:
   contributor:
     inventory-service:
       url: http://localhost:8092/service-communication
+    company-service:
+      url: http://localhost:8091/service-communication
 
 server:
   Port: 8093

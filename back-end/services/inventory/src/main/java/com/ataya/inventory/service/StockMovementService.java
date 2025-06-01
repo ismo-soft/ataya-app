@@ -20,4 +20,5 @@ public interface StockMovementService {
 
     ApiResponse<List<MovementInfo>> getStockMovements(GetMovementsParameters parameters);
 
+    void insertSuspendItemMovement(String itemId, Double quantity, String storeId, String system);
 }

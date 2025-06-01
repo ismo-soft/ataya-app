@@ -40,4 +40,5 @@ public class Address {
     private Double lng;
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private GeoJsonPoint location;
+    private String belongsTo;
 }
