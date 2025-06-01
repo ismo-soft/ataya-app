@@ -6,15 +6,6 @@ spring:
       uri: mongodb://admin:admin@localhost:27017/inventory_db?authSource=admin
   kafka:
     bootstrap-servers: localhost:9092
-    consumer:
-      group-id: inventory-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      auto-offset-reset: earliest
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
 
 ataya:
   app:

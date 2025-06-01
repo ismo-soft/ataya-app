@@ -57,7 +57,7 @@ public class ShoppingController {
     }
 
     // remove item from cart
-    @DeleteMapping("/cart/{itemId}")
+    @DeleteMapping("/cart")
     @Operation(summary = "Remove item from cart")
     private ResponseEntity<ApiResponse<String>> removeItemFromCart(@RequestParam String itemId, @RequestParam Double quantity, @AuthenticationPrincipal Contributor user) {
         return ResponseEntity.ok(shoppingService.removeItemFromCart(user.getId(), quantity, itemId));

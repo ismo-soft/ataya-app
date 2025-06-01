@@ -393,7 +393,12 @@ public class InventoryServiceImpl implements InventoryService {
             throw new ValidationException("supplyItems", request.getProduct_quantity(), "Supply items cannot be null or empty");
         }
 
-        createInventoriesForNotExistProducts(request.getProduct_quantity(), request.getReason(), request.getNote(), user.getCompanyId(), request.getStoreId(), user.getUsername());
+        createInventoriesForNotExistProducts(request.getProduct_quantity(),
+                request.getReason(),
+                request.getNote(),
+                user.getCompanyId(),
+                request.getStoreId(),
+                user.getUsername());
 
         List<InventoryItemInfo> suppliedInventories = new ArrayList<>();
         for (String prdId : request.getProduct_quantity().keySet()) {
@@ -468,6 +473,7 @@ public class InventoryServiceImpl implements InventoryService {
                     .discount(0.0)
                     .discountRate(0.0)
                     .discountedPrice(0.0)
+                    .suspendedQuantity(0.0)
                     .productImageUrl(product.getImageUrl())
                     .isDiscounted(false)
                     .build();
