@@ -196,6 +196,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             existingItem.setQuantity(existingItem.getQuantity() - quantity);
             if (existingItem.getQuantity() <= 0) {
                 items.remove(existingItem);
+                shoppingCartMovementService.deleteCartItemMovement(itemId, userId);
             }
             Double itemPrice = existingItem.getPrice() * quantity;
             shoppingCart.setTotalAmount(shoppingCart.getTotalAmount() - itemPrice);

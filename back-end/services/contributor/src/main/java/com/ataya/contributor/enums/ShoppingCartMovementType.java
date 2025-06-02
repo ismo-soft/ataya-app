@@ -6,6 +6,7 @@ public enum ShoppingCartMovementType {
     REMOVE,
     INCREASE_QUANTITY,
     DECREASE_QUANTITY,
+    DELETE,
     POST;
 
     public static ShoppingCartMovementType fromString(String type) {

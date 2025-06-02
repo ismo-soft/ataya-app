@@ -6,4 +6,6 @@ public interface ShoppingCartMovementService {
     void insertNewCartMovement(String itemId, String id, Double quantity);
 
     void updateItemQuantityMovement(String itemId, String userId, Double quantity);
+
+    void deleteCartItemMovement(String itemId, String userId);
 }

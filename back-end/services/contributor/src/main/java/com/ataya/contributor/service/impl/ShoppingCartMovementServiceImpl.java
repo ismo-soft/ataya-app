@@ -59,5 +59,16 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
         shoppingCartMovementRepository.save(shoppingCart);
     }
 
+    @Override
+    public void deleteCartItemMovement(String itemId, String userId) {
+        ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
+                .itemId(itemId)
+                .shoppingCartId(userId)
+                .movement(ShoppingCartMovementType.DELETE)
+                .happenedAt(LocalDateTime.now().toString())
+                .build();
+        shoppingCartMovementRepository.save(shoppingCart);
+    }
+
 
 }
