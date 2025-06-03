@@ -72,6 +72,6 @@ public class FindAddressController {
     @GetMapping("/all")
     @Operation(summary = "Get all addresses")
     public ResponseEntity<ApiResponse> getAllAddresses(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
-        return ResponseEntity.ok(addressService.getAddressByTags(null, page, size));
+        return ResponseEntity.ok(addressService.getAllAddresses(page, size));
     }
 }

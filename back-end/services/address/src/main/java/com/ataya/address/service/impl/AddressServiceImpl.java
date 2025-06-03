@@ -294,4 +294,38 @@ public class AddressServiceImpl implements AddressService {
             );
         }
     }
+
+    @Override
+    public ApiResponse getAllAddresses(Integer page, Integer size) {
+        if (page != null && size != null) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Address> addresses = addressRepository.findAll(pageable);
+            List<Object> response = new ArrayList<>();
+            for (Address address : addresses) {
+                response.add(addressMapper.toDto(address));
+            }
+            return ApiResponse.builder()
+                    .message("All addresses found")
+                    .status(HttpStatus.OK.getReasonPhrase())
+                    .statusCode(HttpStatus.OK.value())
+                    .timestamp(LocalDateTime.now())
+                    .page(page)
+                    .size(size)
+                    .data(response)
+                    .build();
+        } else {
+            List<Address> addresses = addressRepository.findAll();
+            List<Object> response = new ArrayList<>();
+            for (Address address : addresses) {
+                response.add(addressMapper.toDto(address));
+            }
+            return ApiResponse.builder()
+                    .message("All addresses found")
+                    .status(HttpStatus.OK.getReasonPhrase())
+                    .statusCode(HttpStatus.OK.value())
+                    .timestamp(LocalDateTime.now())
+                    .data(response)
+                    .build();
+        }
+    }
 }

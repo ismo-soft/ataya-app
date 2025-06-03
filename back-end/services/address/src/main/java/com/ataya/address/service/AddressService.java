@@ -20,4 +20,6 @@ public interface AddressService {
     ApiResponse getNearbyAddressesByAddressId(String addressId, Integer distance, List<String> tags, Integer page, Integer size);
 
     ApiResponse getNearbyAddresses(Double lat, Double lng, String id, String addressId, Integer distance, List<String> tags, Integer page, Integer size);
+
+    ApiResponse getAllAddresses(Integer page, Integer size);
 }
