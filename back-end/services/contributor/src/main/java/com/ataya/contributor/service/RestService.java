@@ -13,7 +13,7 @@ public interface RestService {
 
     List<CartItem> getProducts(String items);
 
-    List<StoreDto> getAllStores();
+    List<StoreDto> getAllStores(Integer page, Integer size);
 
     StoreDto getStoreById(String storeId);
 }

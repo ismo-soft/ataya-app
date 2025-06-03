@@ -66,8 +66,9 @@ public class ShoppingController {
     // get all stores
     @GetMapping("/stores")
     @Operation(summary = "Get all stores")
-    private ResponseEntity<ApiResponse<List<StoreDto>>> getAllStores() {
-        return ResponseEntity.ok(shoppingService.getAllStores());
+
+    private ResponseEntity<ApiResponse<List<StoreDto>>> getAllStores(@RequestParam(required = false, defaultValue = "0") Integer page, @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return ResponseEntity.ok(shoppingService.getAllStores(page, size));
     }
 
     @GetMapping("/store/{storeId}")

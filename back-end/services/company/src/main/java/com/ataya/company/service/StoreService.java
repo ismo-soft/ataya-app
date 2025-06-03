@@ -31,7 +31,7 @@ public interface StoreService {
 
     void createStoreWithDefaults(String companyId);
 
-    List<StoreDto> getAllStoresAsDto();
+    List<StoreDto> getAllStoresAsDto(int page, int size);
 
     StoreDto getStoreByIdAsDto(String storeId);
 }

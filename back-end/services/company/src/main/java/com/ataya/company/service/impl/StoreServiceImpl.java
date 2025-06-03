@@ -274,10 +274,10 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<StoreDto> getAllStoresAsDto() {
-        List<Store> stores = storeRepository.findAll();
+    public List<StoreDto> getAllStoresAsDto(int page, int size) {
+        List<Store> stores = storeRepository.findAll(PageRequest.of(page, size)).getContent();
         if (stores.isEmpty()) {
-            throw new ResourceNotFoundException("Store", "id", "No stores found", "No stores available in the system");
+            throw new ValidationException("Stores", "No stores found", "No stores available in the system");
         }
         return storeMapper.toStoreDtoList(stores);
     }

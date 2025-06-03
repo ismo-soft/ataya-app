@@ -111,8 +111,8 @@ public class ShoppingServiceImpl implements ShoppingService {
     }
 
     @Override
-    public ApiResponse<List<StoreDto>> getAllStores() {
-        List<StoreDto> stores = restService.getAllStores();
+    public ApiResponse<List<StoreDto>> getAllStores(Integer page, Integer size) {
+        List<StoreDto> stores = restService.getAllStores(page, size);
         if (stores == null || stores.isEmpty()) {
             throw new InvalidOperationException(
                     "get all stores",

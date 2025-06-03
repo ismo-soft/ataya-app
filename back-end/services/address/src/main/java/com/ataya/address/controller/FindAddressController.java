@@ -68,4 +68,10 @@ public class FindAddressController {
     public ResponseEntity<ApiResponse> getNearbyAddresses(@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lng, @RequestParam(required = false) String id, @RequestParam(required = false) String addressId, @RequestParam Integer distance, @RequestParam(required = false) List<String> tags, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
         return ResponseEntity.ok(addressService.getNearbyAddresses(lat, lng, id, addressId, distance, tags, page, size));
     }
+
+    @GetMapping("/all")
+    @Operation(summary = "Get all addresses")
+    public ResponseEntity<ApiResponse> getAllAddresses(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+        return ResponseEntity.ok(addressService.getAddressByTags(null, page, size));
+    }
 }

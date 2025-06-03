@@ -29,8 +29,11 @@ public class ServiceCommunicationController {
 
     // get all stores
     @GetMapping("/stores")
-    public List<StoreDto> getAllStores() {
-        return storeService.getAllStoresAsDto();
+    public List<StoreDto> getAllStores(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        return storeService.getAllStoresAsDto(page, size);
     }
 
     // get store by id

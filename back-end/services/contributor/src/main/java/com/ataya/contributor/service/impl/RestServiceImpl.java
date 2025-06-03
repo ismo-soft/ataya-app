@@ -53,8 +53,8 @@ public class RestServiceImpl implements RestService {
     }
 
     @Override
-    public List<StoreDto> getAllStores() {
-        String url = String.format("%s/stores", companyServiceUrl);
+    public List<StoreDto> getAllStores(Integer page, Integer size) {
+        String url = String.format("%s/stores?page=%d&size=%d", companyServiceUrl, page, size);
         StoreDto[] stores = restTemplate.getForObject(url, StoreDto[].class);
         if (stores == null || stores.length == 0) {
             throw new ValidationException("stores", "No stores found", "No stores available in the system");

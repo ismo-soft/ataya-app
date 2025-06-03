@@ -17,7 +17,7 @@ public interface ShoppingService {
 
     ApiResponse<String> removeItemFromCart(String id, Double quantity, String itemId);
 
-    ApiResponse<List<StoreDto>> getAllStores();
+    ApiResponse<List<StoreDto>> getAllStores(Integer page, Integer size);
 
     ApiResponse<StoreDto> getStoreById(String storeId);
 }
