@@ -25,6 +25,11 @@ ataya:
       success:
         score: 0.75
 
+
+  address:
+    company-service:
+      url: http://localhost:8091/service-communication
+
 server:
   port: 8090
 

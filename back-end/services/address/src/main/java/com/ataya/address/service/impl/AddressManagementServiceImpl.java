@@ -83,6 +83,10 @@ public class AddressManagementServiceImpl implements AddressManagementService {
         address.setLocation(new GeoJsonPoint(address.getLng(), address.getLat()));
         address.setBelongsTo(request.getBelongsTo());
         address = addressRepository.save(address);
+        boolean setAddressIdToStore = hereGeoCoderService.setAddressIdToStore(address.getBelongsTo(), address.getId());
+        if (!setAddressIdToStore) {
+            throw new RestClientException("Failed to set address ID to store");
+        }
         return ApiResponse.builder()
                 .status(HttpStatus.CREATED.getReasonPhrase())
                 .statusCode(HttpStatus.CREATED.value())

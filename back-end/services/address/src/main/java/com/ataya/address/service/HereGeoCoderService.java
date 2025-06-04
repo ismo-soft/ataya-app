@@ -9,4 +9,6 @@ public interface HereGeoCoderService {
     Address getAddress(CreateAddressRequest request);
     Address getAddress(CreateAddressByCoordinatesRequest request);
     Address getAddress(UpdateAddressRequest request);
+
+    boolean setAddressIdToStore(String belongsTo, String id);
 }

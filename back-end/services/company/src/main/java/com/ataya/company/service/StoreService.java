@@ -34,4 +34,6 @@ public interface StoreService {
     List<StoreDto> getAllStoresAsDto(int page, int size);
 
     StoreDto getStoreByIdAsDto(String storeId);
+
+    void updateAddressOfStore(String storeId, String addressId);
 }

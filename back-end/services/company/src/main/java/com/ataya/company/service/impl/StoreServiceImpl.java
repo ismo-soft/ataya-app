@@ -295,4 +295,19 @@ public class StoreServiceImpl implements StoreService {
         }
         return storeMapper.toStoreDto(store);
     }
+
+    @Override
+    public void updateAddressOfStore(String storeId, String addressId) {
+        Store store = this.getStoreById(storeId);
+        if (store == null) {
+            throw new ResourceNotFoundException(
+                    "Store",
+                    "id",
+                    storeId,
+                    "Store not found"
+            );
+        }
+        store.setAddressId(addressId);
+        storeRepository.save(store);
+    }
 }

@@ -41,4 +41,9 @@ public class ServiceCommunicationController {
     public StoreDto getStoreById(@PathVariable String storeId) {
         return storeService.getStoreByIdAsDto(storeId);
     }
+
+    @PutMapping("/store/{storeId}/address/{addressId}")
+    public void updateAddress(@PathVariable String storeId, @PathVariable String addressId) {
+        storeService.updateAddressOfStore(storeId, addressId);
+    }
 }

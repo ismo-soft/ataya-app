@@ -28,6 +28,9 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
     @Value("${ataya.app.here.success.score}")
     private Double SUCCESS_SCORE;
 
+    @Value("${ataya.address.company-service.url}")
+    private String COMPANY_SERVICE_URL;
+
     public HereGeoCoderServiceImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -109,4 +112,16 @@ public class HereGeoCoderServiceImpl implements HereGeoCoderService {
         return getAddress(response);
 
     }
+
+    @Override
+    public boolean setAddressIdToStore(String belongsTo, String id) {
+        String url = COMPANY_SERVICE_URL + "/store/" + belongsTo + "/address/" + id;
+        try {
+            restTemplate.put(url, null);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }
