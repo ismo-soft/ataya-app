@@ -2,6 +2,7 @@ package com.ataya.company.controller;
 
 import com.ataya.company.dto.product.ProductDto;
 import com.ataya.company.dto.store.StoreDto;
+import com.ataya.company.dto.store.StoreDtoPage;
 import com.ataya.company.service.ProductService;
 import com.ataya.company.service.StoreService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class ServiceCommunicationController {
 
     // get all stores
     @GetMapping("/stores")
-    public List<StoreDto> getAllStores(
+    public StoreDtoPage getAllStores(
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size
     ) {

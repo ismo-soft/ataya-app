@@ -78,7 +78,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 existingItem.setQuantity(existingItem.getQuantity() + quantity);
                 Double itemPrice = existingItem.getPrice() * quantity;
                 existingCart.setTotalAmount(existingCart.getTotalAmount() + itemPrice);
-                shoppingCartMovementService.updateItemQuantityMovement(itemId, userId, quantity);
+                shoppingCartMovementService.insertUpdateItemQuantityMovement(itemId, userId, quantity);
                 kafkaService.suspendItemFromInventory(itemId, quantity);
             } else {
                 CartItem newItem = restService.getProducts(itemId).get(0);
@@ -194,13 +194,13 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 );
             }
             existingItem.setQuantity(existingItem.getQuantity() - quantity);
-            if (existingItem.getQuantity() <= 0) {
-                items.remove(existingItem);
-                shoppingCartMovementService.deleteCartItemMovement(itemId, userId);
-            }
             Double itemPrice = existingItem.getPrice() * quantity;
             shoppingCart.setTotalAmount(shoppingCart.getTotalAmount() - itemPrice);
-            shoppingCartMovementService.updateItemQuantityMovement(itemId, userId, -quantity);
+            shoppingCartMovementService.insertUpdateItemQuantityMovement(itemId, userId, -quantity);
+            if (existingItem.getQuantity() <= 0) {
+                items.remove(existingItem);
+                shoppingCartMovementService.insertRemoveCartItemMovement(itemId, userId);
+            }
             kafkaService.releaseSuspendedInventory(itemId, quantity);
         } else {
             throw new InvalidOperationException(
@@ -213,4 +213,60 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         shoppingCartRepository.save(shoppingCart);
         return "Item removed from cart successfully";
     }
+
+    @Override
+    public ShoppingCart getCustomerShoppingCart(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new InvalidOperationException(
+                    "get customer shopping cart",
+                    "Customer ID cannot be null or empty"
+            );
+        }
+        return shoppingCartRepository.findByCustomerId(id)
+                .orElseThrow(() -> new InvalidOperationException(
+                        "get customer shopping cart",
+                        "No shopping cart found for customer ID: " + id
+                ));
+    }
+
+    @Override
+    public void emptyUserShoppingCart(String id) {
+        // Validate the user ID
+        if (id == null || id.isEmpty()) {
+            throw new InvalidOperationException(
+                    "empty user shopping cart",
+                    "User ID cannot be null or empty"
+            );
+        }
+        // validate the user have only one shopping cart
+        ShoppingCart shoppingCart = shoppingCartRepository.findByCustomerId(id)
+                .orElseThrow(() -> new InvalidOperationException(
+                        "empty user shopping cart",
+                        "No shopping cart found for user ID: " + id
+                )
+            );
+        if (shoppingCart.getItems() == null || shoppingCart.getItems().isEmpty()) {
+            throw new InvalidOperationException(
+                    "empty user shopping cart",
+                    "Shopping cart is already empty for user ID: " + id
+            );
+        }
+        for (CartItem item : shoppingCart.getItems()) {
+            shoppingCartMovementService.insertPostedCartItemMovement(
+                    item.getItemId(),
+                    id,
+                    item.getQuantity()
+            );
+        }
+
+        // create statistics of cart movements then delete them
+        Object statistics = shoppingCartMovementService.reportCartMovements(shoppingCart.getId());
+//        shoppingCartMovementService.removeAllCartMovements(shoppingCart.getId());
+        // delete the shopping cart
+        // kafka message to remove suspended items from inventory, with items statistics
+        // kafka message to company service for product statistics.
+    }
 }
+
+
+

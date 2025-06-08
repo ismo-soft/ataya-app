@@ -1,8 +1,8 @@
 package com.ataya.contributor.service.impl;
 
 import com.ataya.contributor.dto.product.ProductItemDto;
-import com.ataya.contributor.dto.shoppingCart.ItemInfoDto;
 import com.ataya.contributor.dto.store.StoreDto;
+import com.ataya.contributor.dto.store.StoreDtoPage;
 import com.ataya.contributor.exception.custom.ValidationException;
 import com.ataya.contributor.model.CartItem;
 import com.ataya.contributor.service.RestService;
@@ -53,13 +53,16 @@ public class RestServiceImpl implements RestService {
     }
 
     @Override
-    public List<StoreDto> getAllStores(Integer page, Integer size) {
+    public StoreDtoPage getAllStores(Integer page, Integer size) {
+        if (page == null || size == null) {
+            throw new ValidationException("pagination parameters", "Page and size cannot be null", "Invalid pagination parameters provided");
+        }
         String url = String.format("%s/stores?page=%d&size=%d", companyServiceUrl, page, size);
-        StoreDto[] stores = restTemplate.getForObject(url, StoreDto[].class);
-        if (stores == null || stores.length == 0) {
+        StoreDtoPage storeDtoPage = restTemplate.getForObject(url, StoreDtoPage.class);
+        if (storeDtoPage == null || storeDtoPage.getStores() == null) {
             throw new ValidationException("stores", "No stores found", "No stores available in the system");
         }
-        return List.of(stores);
+        return storeDtoPage;
     }
 
     @Override

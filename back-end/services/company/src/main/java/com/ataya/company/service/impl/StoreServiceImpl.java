@@ -1,6 +1,7 @@
 package com.ataya.company.service.impl;
 
 import com.ataya.company.dto.store.StoreDto;
+import com.ataya.company.dto.store.StoreDtoPage;
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
 import com.ataya.company.dto.store.response.StoreDetailsResponse;
@@ -274,12 +275,24 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<StoreDto> getAllStoresAsDto(int page, int size) {
-        List<Store> stores = storeRepository.findAll(PageRequest.of(page, size)).getContent();
+    public StoreDtoPage getAllStoresAsDto(int page, int size) {
+        long totalCount = storeRepository.count();
+        if (size <= 0) {
+            // get all stores
+            size = totalCount == 0 ? 1 : (int) totalCount;
+        }
+        PageRequest pageRequest = PageRequest.of(page, size);
+        List<Store> stores = storeRepository.findAll(pageRequest).getContent();
         if (stores.isEmpty()) {
             throw new ValidationException("Stores", "No stores found", "No stores available in the system");
         }
-        return storeMapper.toStoreDtoList(stores);
+        return StoreDtoPage.builder()
+                .stores(storeMapper.toStoreDtoList(stores))
+                .totalElements(totalCount)
+                .pageNumber(page)
+                .pageSize(size)
+                .totalPages((int) Math.ceil((double) totalCount / size))
+                .build();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.ataya.company.service;
 
 import com.ataya.company.dto.store.StoreDto;
+import com.ataya.company.dto.store.StoreDtoPage;
 import com.ataya.company.dto.store.request.CreateStoreRequest;
 import com.ataya.company.dto.store.request.UpdateStoreRequest;
 import com.ataya.company.dto.store.response.StoreDetailsResponse;
@@ -31,7 +32,7 @@ public interface StoreService {
 
     void createStoreWithDefaults(String companyId);
 
-    List<StoreDto> getAllStoresAsDto(int page, int size);
+    StoreDtoPage getAllStoresAsDto(int page, int size);
 
     StoreDto getStoreByIdAsDto(String storeId);
 

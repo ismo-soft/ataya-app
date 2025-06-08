@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,6 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
         ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
                 .itemId(itemId)
                 .shoppingCartId(id)
-                .quantity(quantity)
                 .movement(ShoppingCartMovementType.NEW)
                 .happenedAt(LocalDateTime.now().toString())
                 .build();
@@ -42,7 +43,7 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
     }
 
     @Override
-    public void updateItemQuantityMovement(String itemId, String userId, Double quantity) {
+    public void insertUpdateItemQuantityMovement(String itemId, String userId, Double quantity) {
         ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
                 .itemId(itemId)
                 .shoppingCartId(userId)
@@ -60,14 +61,52 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
     }
 
     @Override
-    public void deleteCartItemMovement(String itemId, String userId) {
+    public void insertRemoveCartItemMovement(String itemId, String userId) {
         ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
                 .itemId(itemId)
                 .shoppingCartId(userId)
-                .movement(ShoppingCartMovementType.DELETE)
+                .movement(ShoppingCartMovementType.REMOVE)
                 .happenedAt(LocalDateTime.now().toString())
                 .build();
         shoppingCartMovementRepository.save(shoppingCart);
+    }
+
+    @Override
+    public void insertPostedCartItemMovement(String itemId, String id, Double quantity) {
+        ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
+                .itemId(itemId)
+                .shoppingCartId(id)
+                .quantity(quantity)
+                .movement(ShoppingCartMovementType.POST)
+                .happenedAt(LocalDateTime.now().toString())
+                .build();
+        shoppingCartMovementRepository.save(shoppingCart);
+    }
+
+    @Override
+    public Object reportCartMovements(String id) {
+        List<ShoppingCartMovement> movements = shoppingCartMovementRepository.findByShoppingCartId(id);
+        if (movements.isEmpty()) {
+            return "No movements found for the shopping cart with ID: " + id;
+        }
+
+        List<ShoppingCartMovement> newMovements = GetByType(movements, ShoppingCartMovementType.NEW);
+        List<ShoppingCartMovement> addMovements = GetByType(movements, ShoppingCartMovementType.ADD);
+        List<ShoppingCartMovement> removeMovements = GetByType(movements, ShoppingCartMovementType.REMOVE);
+        List<ShoppingCartMovement> increaseMovements = GetByType(movements, ShoppingCartMovementType.INCREASE_QUANTITY);
+        List<ShoppingCartMovement> decreaseMovements = GetByType(movements, ShoppingCartMovementType.DECREASE_QUANTITY);
+        List<ShoppingCartMovement> postMovements = GetByType(movements, ShoppingCartMovementType.POST);
+        return null;
+    }
+
+    public List<ShoppingCartMovement> GetByType(List<ShoppingCartMovement> movements, ShoppingCartMovementType shoppingCartMovementType) {
+        List<ShoppingCartMovement> filteredMovements = new ArrayList<>();
+        for (ShoppingCartMovement movement : movements) {
+            if (movement.getMovement() == shoppingCartMovementType) {
+                filteredMovements.add(movement);
+            }
+        }
+        return filteredMovements;
     }
 
 

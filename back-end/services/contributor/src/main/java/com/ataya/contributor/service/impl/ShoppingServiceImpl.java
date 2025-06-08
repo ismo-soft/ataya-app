@@ -3,6 +3,7 @@ package com.ataya.contributor.service.impl;
 import com.ataya.contributor.dto.product.ProductItemDto;
 import com.ataya.contributor.dto.shoppingCart.ShoppingCartDto;
 import com.ataya.contributor.dto.store.StoreDto;
+import com.ataya.contributor.dto.store.StoreDtoPage;
 import com.ataya.contributor.exception.custom.InvalidOperationException;
 import com.ataya.contributor.model.ShoppingCart;
 import com.ataya.contributor.service.RestService;
@@ -112,19 +113,23 @@ public class ShoppingServiceImpl implements ShoppingService {
 
     @Override
     public ApiResponse<List<StoreDto>> getAllStores(Integer page, Integer size) {
-        List<StoreDto> stores = restService.getAllStores(page, size);
-        if (stores == null || stores.isEmpty()) {
+        StoreDtoPage stores = restService.getAllStores(page, size);
+        if (stores.getStores() == null || stores.getStores().isEmpty()) {
             throw new InvalidOperationException(
                     "get all stores",
                     "No stores found"
             );
         }
         return ApiResponse.<List<StoreDto>>builder()
-                .data(stores)
+                .data(stores.getStores())
                 .message("Stores retrieved successfully")
                 .statusCode(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .timestamp(LocalDateTime.now())
+                .page(stores.getPageNumber())
+                .size(stores.getPageSize())
+                .total(stores.getTotalElements())
+                .totalPages(stores.getTotalPages())
                 .build();
     }
 
