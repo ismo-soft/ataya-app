@@ -1,6 +1,8 @@
 package com.ataya.contributor.service.impl;
 
+import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.enums.ShoppingCartMovementType;
+import com.ataya.contributor.exception.custom.InvalidOperationException;
 import com.ataya.contributor.model.ShoppingCartMovement;
 import com.ataya.contributor.repo.ShoppingCartMovementRepository;
 import com.ataya.contributor.service.ShoppingCartMovementService;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -84,19 +87,60 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
     }
 
     @Override
-    public Object reportCartMovements(String id) {
+    public CartItemStatistics reportCartMovements(String id) {
         List<ShoppingCartMovement> movements = shoppingCartMovementRepository.findByShoppingCartId(id);
         if (movements.isEmpty()) {
-            return "No movements found for the shopping cart with ID: " + id;
+            throw new InvalidOperationException("reportCartMovements", "No movements found for the given shopping cart ID: " + id);
         }
-
+        // represent items all items
         List<ShoppingCartMovement> newMovements = GetByType(movements, ShoppingCartMovementType.NEW);
-        List<ShoppingCartMovement> addMovements = GetByType(movements, ShoppingCartMovementType.ADD);
+        // represent items removed from the cart
         List<ShoppingCartMovement> removeMovements = GetByType(movements, ShoppingCartMovementType.REMOVE);
-        List<ShoppingCartMovement> increaseMovements = GetByType(movements, ShoppingCartMovementType.INCREASE_QUANTITY);
-        List<ShoppingCartMovement> decreaseMovements = GetByType(movements, ShoppingCartMovementType.DECREASE_QUANTITY);
+        // represent sold items
         List<ShoppingCartMovement> postMovements = GetByType(movements, ShoppingCartMovementType.POST);
-        return null;
+        // all = post quantity - remove quantity
+        // new movement: map itemId to count of repetition
+        Map<String, Long> newMovementCount = newMovements.stream()
+                .collect(
+                        java.util.stream.Collectors.groupingBy(
+                                ShoppingCartMovement::getItemId,
+                                java.util.stream.Collectors.counting()
+                        )
+                );
+        // remove movement: map itemId to count of repetition
+        Map<String, Long> removeMovementCount = removeMovements.stream()
+                .collect(
+                        java.util.stream.Collectors.groupingBy(
+                                ShoppingCartMovement::getItemId,
+                                java.util.stream.Collectors.counting()
+                        )
+                );
+        // post movement: map itemId to count of repetition
+        Map<String, Long> postMovementCount = postMovements.stream()
+                .collect(
+                        java.util.stream.Collectors.groupingBy(
+                                ShoppingCartMovement::getItemId,
+                                java.util.stream.Collectors.counting()
+                        )
+                );
+
+        // post movement: map itemId to total quantity
+        Map<String, Double> postMovementTotalQuantity = postMovements.stream()
+                .collect(
+                        java.util.stream.Collectors.groupingBy(
+                                ShoppingCartMovement::getItemId,
+                                java.util.stream.Collectors.summingDouble(ShoppingCartMovement::getQuantity)
+                        )
+                );
+
+        return CartItemStatistics.builder()
+                .itemsAddedToCart(newMovementCount)
+                .itemsRemovedFromCart(removeMovementCount)
+                .itemsSold(postMovementCount)
+                .soldQuantity(postMovementTotalQuantity)
+                .build();
+
+
     }
 
     public List<ShoppingCartMovement> GetByType(List<ShoppingCartMovement> movements, ShoppingCartMovementType shoppingCartMovementType) {
@@ -107,6 +151,15 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
             }
         }
         return filteredMovements;
+    }
+
+    @Override
+    public void removeAllCartMovements(String id) {
+        List<ShoppingCartMovement> movements = shoppingCartMovementRepository.findByShoppingCartId(id);
+        if (movements.isEmpty()) {
+            throw new InvalidOperationException("removeAllCartMovements", "No movements found for the given shopping cart ID: " + id);
+        }
+        shoppingCartMovementRepository.deleteAll(movements);
     }
 
 

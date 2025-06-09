@@ -1,9 +1,8 @@
 package com.ataya.inventory.service;
 
 import com.ataya.inventory.dto.InventoryItemInfo;
-import com.ataya.inventory.dto.InventoryStatistics;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
-import com.ataya.inventory.dto.company.ProductDto;
+import com.ataya.inventory.dto.contributor.CartItemStatistics;
 import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
 import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.model.User;
@@ -39,4 +38,6 @@ public interface InventoryService {
     void suspendItem(String itemId, Double quantity);
 
     void releaseSuspendedItem(String itemId, Double quantity);
+
+    void releaseSuspendedForSoldItems(CartItemStatistics itemRequest);
 }

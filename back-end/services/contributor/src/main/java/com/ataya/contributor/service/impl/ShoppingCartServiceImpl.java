@@ -2,6 +2,7 @@ package com.ataya.contributor.service.impl;
 
 import com.ataya.contributor.dto.shoppingCart.ItemInfoDto;
 import com.ataya.contributor.dto.shoppingCart.ShoppingCartDto;
+import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.enums.ShoppingCartStatus;
 import com.ataya.contributor.exception.custom.InvalidOperationException;
 import com.ataya.contributor.model.CartItem;
@@ -15,9 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -260,11 +259,54 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         // create statistics of cart movements then delete them
-        Object statistics = shoppingCartMovementService.reportCartMovements(shoppingCart.getId());
-//        shoppingCartMovementService.removeAllCartMovements(shoppingCart.getId());
+        CartItemStatistics statistics = shoppingCartMovementService.reportCartMovements(shoppingCart.getId());
+
+        // map string to double for itemId to item price
+        Map<String, Double> itemPriceMap = new HashMap<>();
+        for (CartItem item : shoppingCart.getItems()) {
+            itemPriceMap.put(item.getItemId(), item.getPrice());
+        }
+        // map string to double for itemId to total price
+        Map<String, Double> itemTotalPriceMap = new HashMap<>();
+        for (CartItem item : shoppingCart.getItems()) {
+            itemTotalPriceMap.put(item.getItemId(), item.getPrice() * item.getQuantity());
+        }
+        statistics.setSoldPrice(itemPriceMap);
+        statistics.setTotalPriceOfSoldItems(itemTotalPriceMap);
+
+        shoppingCartMovementService.removeAllCartMovements(shoppingCart.getId());
         // delete the shopping cart
+        shoppingCartRepository.delete(shoppingCart);
         // kafka message to remove suspended items from inventory, with items statistics
-        // kafka message to company service for product statistics.
+        kafkaService.releaseSuspendedForSoldItems(statistics);
+    }
+
+    @Override
+    public Map<String, Boolean> checkItemsAvailability(List<CartItem> items) {
+        if (items == null || items.isEmpty()) {
+            throw new InvalidOperationException(
+                    "check items availability",
+                    "Items list cannot be null or empty"
+            );
+        }
+        // create a map of itemId to quantity
+        Map<String, Double> itemToQuantityMap = new HashMap<>();
+        for (CartItem item : items) {
+            if (item.getItemId() == null || item.getItemId().isEmpty()) {
+                throw new InvalidOperationException(
+                        "check items availability",
+                        "Item ID cannot be null or empty"
+                );
+            }
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new InvalidOperationException(
+                        "check items availability",
+                        "Item quantity must be greater than 0"
+                );
+            }
+            itemToQuantityMap.put(item.getItemId(), item.getQuantity());
+        }
+        return restService.areItemsAvailableToBuy(itemToQuantityMap);
     }
 }
 

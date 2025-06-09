@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/service-communication")
@@ -35,6 +37,12 @@ public class ServiceCommunicationController {
     public ResponseEntity<List<ItemInfoDto>> getProductsByItems(@RequestParam String items) {
         List<ItemInfoDto> productItems = serviceCommunicationService.getProducts(items);
         return ResponseEntity.ok(productItems);
+    }
+
+    @GetMapping("/product/availability")
+    public ResponseEntity<Map<String, Boolean>> areItemsAvailableToBuy(@RequestParam("items") String itemsRaw) {
+        List<String> items = Arrays.asList(itemsRaw.split(";")); // Use semicolon or another separator
+        return ResponseEntity.ok(serviceCommunicationService.areItemsAvailableToBuy(items));
     }
 
 }

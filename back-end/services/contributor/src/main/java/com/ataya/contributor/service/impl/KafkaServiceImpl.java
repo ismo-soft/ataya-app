@@ -1,6 +1,7 @@
 package com.ataya.contributor.service.impl;
 
 import com.ataya.contributor.dto.product.SuspendItemRequest;
+import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.service.KafkaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class KafkaServiceImpl implements KafkaService {
 
     private final KafkaTemplate<String, SuspendItemRequest> kafkaTemplate;
+    private final KafkaTemplate<String, CartItemStatistics> statisticsKafkaTemplate;
 
     @Override
     public void suspendItemFromInventory(String itemId, Double quantity) {
@@ -30,5 +32,15 @@ public class KafkaServiceImpl implements KafkaService {
                         .itemId(itemId)
                         .quantity(quantity)
                         .build());
+    }
+
+    @Override
+    public void releaseSuspendedForSoldItems(CartItemStatistics statistics) {
+        // send to company service
+        System.out.println("\"will be implemented later\", Sending statistics to company service: " + statistics);
+        statisticsKafkaTemplate.send(
+                "release-suspended-for-sold-items",
+                statistics
+        );
     }
 }

@@ -4,6 +4,7 @@ import com.ataya.inventory.dto.InventoryItemInfo;
 import com.ataya.inventory.dto.InventoryStatistics;
 import com.ataya.inventory.dto.UpdateInventoryRequest;
 import com.ataya.inventory.dto.company.ProductDto;
+import com.ataya.inventory.dto.contributor.CartItemStatistics;
 import com.ataya.inventory.dto.stockMovement.EditQuantityRequest;
 import com.ataya.inventory.dto.stockMovement.SupplyRequest;
 import com.ataya.inventory.enums.ItemUnit;
@@ -474,6 +475,8 @@ public class InventoryServiceImpl implements InventoryService {
                     .discountRate(0.0)
                     .discountedPrice(0.0)
                     .suspendedQuantity(0.0)
+                    .waitingForBeneficiaryQuantity(0.0)
+                    .deliveredQuantity(0.0)
                     .productImageUrl(product.getImageUrl())
                     .isDiscounted(false)
                     .build();
@@ -512,6 +515,36 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setSuspendedQuantity(inventory.getSuspendedQuantity() - quantity);
 
         inventoryRepository.save(inventory);
+    }
+
+    @Override
+    public void releaseSuspendedForSoldItems(CartItemStatistics itemRequest) {
+        // soldItems is a map of itemId and quantity
+        if (itemRequest.getSoldQuantity() == null || itemRequest.getSoldQuantity().isEmpty()) {
+            throw new ValidationException(
+                    "soldItems",
+                    itemRequest.getSoldQuantity() == null ? "null" : itemRequest.getSoldQuantity(),
+                    "Sold items cannot be null or empty"
+            );
+        }
+        Map<String, Double> itemsSold = itemRequest.getSoldQuantity();
+        for (String itemId : itemsSold.keySet()) {
+            Double quantity = itemsSold.get(itemId);
+            if (quantity == null || quantity <= 0) {
+                throw new ValidationException("quantity", quantity, "Quantity cannot be null or negative");
+            }
+            Inventory inventory = inventoryRepository.findById(itemId).orElseThrow(
+                    () -> new ResourceNotFoundException(
+                            "Inventory Item", "id", itemId + " not found"
+                    )
+            );
+            if (inventory.getSuspendedQuantity() < quantity) {
+                throw new ValidationException("quantity", quantity, "Quantity cannot be greater than suspended quantity");
+            }
+            inventory.setSuspendedQuantity(inventory.getSuspendedQuantity() - quantity);
+            inventory.setWaitingForBeneficiaryQuantity(inventory.getWaitingForBeneficiaryQuantity() + quantity);
+            inventoryRepository.save(inventory);
+        }
     }
 
     private void setDiscount(Inventory inventory, Double discount, Double discountRate) {

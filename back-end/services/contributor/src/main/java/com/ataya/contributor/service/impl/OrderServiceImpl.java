@@ -18,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -43,22 +46,33 @@ public class OrderServiceImpl implements OrderService {
         if (shoppingCart == null) {
             throw new ResourceNotFoundException("ShoppingCart", "user.id", user.getId());
         }
-        if (shoppingCart.getStatus() != ShoppingCartStatus.ACTIVE) {
-            throw new InvalidOperationException("apply Order","resource is not active");
-        }
         if (shoppingCart.getItems().isEmpty()) {
             throw new InvalidOperationException("apply Order", "Shopping cart is empty");
         }
+        Map<String,Boolean> itemAvailability = shoppingCartService.checkItemsAvailability(shoppingCart.getItems());
+        Map<String, Boolean> outOfStockItems = new HashMap<>();
+        itemAvailability.forEach((itemId, isAvailable) -> {
+            if (!isAvailable) {
+                outOfStockItems.put(itemId, false);
+            }
+        });
+        if (!outOfStockItems.isEmpty()) {
+            throw new InvalidOperationException("apply Order", "Some items are out of stock: " + outOfStockItems.keySet());
+        }
 
-
-
-        Order order = Order.builder()
-                .buyerId(contributor.getId())
-                .totalAmount(shoppingCart.getTotalAmount())
-                .note(request.getOrderNote())
-                .status(OrderStatus.PENDING)
-                .build();
-        order = orderRepository.save(order);
+        Optional<Order> orderOptional = orderRepository.findByBuyerIdAndStatus(user.getId(), OrderStatus.PENDING);
+        Order order;
+        if (orderOptional.isPresent()) {
+            order = orderOptional.get();
+        } else {
+            order = Order.builder()
+                    .buyerId(contributor.getId())
+                    .totalAmount(shoppingCart.getTotalAmount())
+                    .note(request.getOrderNote())
+                    .status(OrderStatus.PENDING)
+                    .build();
+            order = orderRepository.save(order);
+        }
         Payment payment = paymentService.createPaymentOfOrder(order, request);
         if (payment == null) {
             throw new InvalidOperationException("apply Order", "Payment creation failed");
@@ -67,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidOperationException("apply Order", "Payment amount does not match order total");
         }
         if (payment.getIsPaid()!= null && payment.getIsPaid()) {
-            order.setStatus(OrderStatus.POSTED);
+            order.setStatus(OrderStatus.PAID);
             order.setPaidAt(payment.getPaidAt());
             order.setPaymentId(payment.getId());
             orderItemService.createOrderItemsFromCartItems(order, shoppingCart.getItems());
@@ -78,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidOperationException("apply Order", "Order status still PENDING");
         }
         order = orderRepository.save(order);
-        if (order.getStatus() == OrderStatus.POSTED) {
+        if (order.getStatus() == OrderStatus.PAID) {
             shoppingCartService.emptyUserShoppingCart(user.getId());
         }
         return ApiResponse.<String>builder()

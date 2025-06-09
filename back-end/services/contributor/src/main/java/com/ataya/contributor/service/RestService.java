@@ -6,6 +6,7 @@ import com.ataya.contributor.dto.store.StoreDtoPage;
 import com.ataya.contributor.model.CartItem;
 
 import java.util.List;
+import java.util.Map;
 
 public interface RestService {
 
@@ -16,4 +17,6 @@ public interface RestService {
     StoreDtoPage getAllStores(Integer page, Integer size);
 
     StoreDto getStoreById(String storeId);
+
+    Map<String, Boolean> areItemsAvailableToBuy(Map<String, Double> itemsToQuantity);
 }

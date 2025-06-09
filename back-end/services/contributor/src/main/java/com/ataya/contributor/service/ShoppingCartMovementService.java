@@ -1,5 +1,6 @@
 package com.ataya.contributor.service;
 
+import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.enums.ShoppingCartMovementType;
 import com.ataya.contributor.model.ShoppingCartMovement;
 
@@ -16,7 +17,9 @@ public interface ShoppingCartMovementService {
 
     void insertPostedCartItemMovement(String itemId, String id, Double quantity);
 
-    Object reportCartMovements(String id);
+    CartItemStatistics reportCartMovements(String id);
 
     List<ShoppingCartMovement> GetByType(List<ShoppingCartMovement> movements, ShoppingCartMovementType shoppingCartMovementType);
+
+    void removeAllCartMovements(String id);
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +77,30 @@ public class RestServiceImpl implements RestService {
             throw new ValidationException("store ID", "Store not found for ID: " + storeId, "No store found with the provided ID");
         }
         return store;
+    }
+
+    @Override
+    public Map<String, Boolean> areItemsAvailableToBuy(Map<String, Double> itemsToQuantity) {
+        if (itemsToQuantity == null || itemsToQuantity.isEmpty()) {
+            throw new ValidationException("items to quantity", "Items to quantity map cannot be null or empty", "Invalid items to quantity provided");
+        }
+        StringBuilder urlBuilder = new StringBuilder(inventoryServiceUrl + "/product/availability?");
+
+        itemsToQuantity.forEach((itemId, quantity) -> {
+            if (itemId != null && !itemId.isEmpty() && quantity != null && quantity > 0) {
+                // items=itemId,quantity&items=itemId2,quantity2&...
+                urlBuilder.append("items=").append(itemId).append(",").append(quantity).append(";");
+            }
+        });
+
+        String url = urlBuilder.toString();
+        System.out.println("Checking item availability with URL: " + url);
+
+        Map<String, Boolean> availabilityMap = restTemplate.getForObject(url, Map.class);
+        if (availabilityMap == null || availabilityMap.isEmpty()) {
+            throw new ValidationException("item availability", "No availability data found", "No item availability data returned from the service");
+        }
+        return availabilityMap;
     }
 
 

@@ -36,4 +36,6 @@ public class Inventory {
     private Boolean isDiscounted;
     private LocalDateTime updatedAt;
     private String updatedBy;
+    private Double waitingForBeneficiaryQuantity;
+    private Double deliveredQuantity;
 }
