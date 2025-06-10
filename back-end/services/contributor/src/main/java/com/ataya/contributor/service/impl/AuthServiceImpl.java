@@ -29,7 +29,6 @@ public class AuthServiceImpl implements AuthService {
     public ApiResponse<ContributorDto> registerUser(CredentialRequest request) {
 
         if (request.getEmail() == null || request.getEmail().isEmpty()) {
-            System.out.println("Email is required: " + request.getEmail());
             throw new ValidationException(
                     "email",
                     "null",

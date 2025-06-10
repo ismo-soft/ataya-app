@@ -5,6 +5,8 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface BeneficiaryRepository extends CrudRepository<Beneficiary, Long> {
+public interface BeneficiaryRepository extends CrudRepository<Beneficiary, String> {
     Optional<Beneficiary> findByIdentityNumber(String identityNumber);
+
+    boolean existsByIdentityNumber(String identityNumber);
 }

@@ -25,7 +25,7 @@ public class Beneficiary implements UserDetails {
     private String email;
     private String phoneNumber;
     private String password;
-    private String enabled;
+    private boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -34,26 +34,26 @@ public class Beneficiary implements UserDetails {
 
     @Override
     public String getUsername() {
-        return "";
+        return this.identityNumber;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.enabled;
     }
 }
