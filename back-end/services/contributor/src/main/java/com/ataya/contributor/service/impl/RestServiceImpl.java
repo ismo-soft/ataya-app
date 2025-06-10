@@ -1,6 +1,6 @@
 package com.ataya.contributor.service.impl;
 
-import com.ataya.contributor.dto.product.ProductItemDto;
+import com.ataya.contributor.dto.product.ProductItemDtoPage;
 import com.ataya.contributor.dto.store.StoreDto;
 import com.ataya.contributor.dto.store.StoreDtoPage;
 import com.ataya.contributor.exception.custom.ValidationException;
@@ -27,7 +27,7 @@ public class RestServiceImpl implements RestService {
     private String companyServiceUrl;
 
     @Override
-    public List<ProductItemDto> getProducts(String storeId, String name, String category, Double minPrice, Double maxPrice, String brand, int page, int size) {
+    public ProductItemDtoPage getProducts(String storeId, String name, String category, Double minPrice, Double maxPrice, String brand, int page, int size) {
         String url = String.format("%s/products?strId=%s", inventoryServiceUrl, storeId);
         url = addIfNotNull(url, "nm", name);
         url = addIfNotNull(url, "cat", category);
@@ -37,8 +37,16 @@ public class RestServiceImpl implements RestService {
         url = addIfNotNull(url, "page", page);
         url = addIfNotNull(url, "size", size);
 
-        ProductItemDto[] products = restTemplate.getForObject(url, ProductItemDto[].class);
-        return List.of(products != null ? products : new ProductItemDto[0]);
+        System.out.println("Fetching products from URL: " + url);
+        ProductItemDtoPage productPage = restTemplate.getForObject(url, ProductItemDtoPage.class);
+        if (productPage == null || productPage.getProducts() == null) {
+            throw new ValidationException("products", "No products found", "No products available for the provided criteria");
+        }
+        if (productPage.getProducts().isEmpty()) {
+            throw new ValidationException("products", "No products found for the given criteria", "No products match the provided filters");
+        }
+        return productPage;
+
 
     }
 

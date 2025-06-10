@@ -2,6 +2,7 @@ package com.ataya.inventory.service.impl;
 
 import com.ataya.inventory.dto.contributor.ItemInfoDto;
 import com.ataya.inventory.dto.contributor.ProductItemDto;
+import com.ataya.inventory.dto.contributor.ProductItemDtoPage;
 import com.ataya.inventory.model.Inventory;
 import com.ataya.inventory.repo.InventoryRepository;
 import com.ataya.inventory.service.ServiceCommunicationService;
@@ -9,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.swing.text.html.Option;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,13 +20,12 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
     private final InventoryRepository inventoryRepository;
 
     @Override
-    public List<ProductItemDto> getProducts(String storeId, String name, String category,
-                                            Double minPrice, Double maxPrice, String brand,
-                                            int page, int size) {
+    public ProductItemDtoPage getProducts(String storeId, String name, String category,
+                                                Double minPrice, Double maxPrice, String brand,
+                                                int page, int size) {
 
         List<Inventory> inventories = inventoryRepository.findByStoreIdAndQuantityGreaterThanReorderLevel(storeId);
-
-        return inventories.stream()
+        List<ProductItemDto> products = inventories.stream()
                 .filter(inventory -> applyFilters(inventory, name, category, minPrice, maxPrice, brand))
                 .skip((long) page * size)
                 .limit(size)
@@ -47,6 +44,13 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
                         .imageUrl(inventory.getProductImageUrl())
                         .build())
                 .toList();
+        return ProductItemDtoPage.builder()
+                .products(products)
+                .totalPages((int) Math.ceil((double) inventories.size() / size))
+                .totalElements(inventories.size())
+                .pageNumber(page)
+                .pageSize(size)
+                .build();
     }
 
     @Override
@@ -104,6 +108,31 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
         }
         return areItemsAvailable;
 
+    }
+
+    @Override
+    public ProductItemDtoPage getProductsToDeliver(String storeId, String name, String category, String brand, int page, int size) {
+        List<Inventory> inventories = inventoryRepository.findByStoreIdAndWaitingForBeneficiaryQuantityGreaterThan(storeId, 0.0);
+        List<ProductItemDto> products = inventories.stream()
+                .filter(inventory -> applyFilters(inventory, name, category, null, null, brand))
+                .skip((long) page * size)
+                .limit(size)
+                .map(inventory -> ProductItemDto.builder()
+                        .itemId(inventory.getId())
+                        .productId(inventory.getCompanyId())
+                        .productName(inventory.getProductName())
+                        .productBrand(inventory.getProductBrand())
+                        .productCategory(inventory.getProductCategory())
+                        .imageUrl(inventory.getProductImageUrl())
+                        .build())
+                .toList();
+        return ProductItemDtoPage.builder()
+                .products(products)
+                .totalPages((int) Math.ceil((double) inventories.size() / size))
+                .totalElements(inventories.size())
+                .pageNumber(page)
+                .pageSize(size)
+                .build();
     }
 
     private boolean applyFilters(Inventory inventory, String name, String category,

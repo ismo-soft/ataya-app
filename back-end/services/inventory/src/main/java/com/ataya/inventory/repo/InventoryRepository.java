@@ -35,4 +35,6 @@ public interface InventoryRepository extends MongoRepository<Inventory, String>,
 
     @Query(value = "{'storeId': ?0, '$expr': { '$gt': ['$quantity', '$reorderLevel'] }}")
     List<Inventory> findByStoreIdAndQuantityGreaterThanReorderLevel(String storeId);
+
+    List<Inventory> findByStoreIdAndWaitingForBeneficiaryQuantityGreaterThan(String storeId, Double waitingForBeneficiaryQuantityIsGreaterThan);
 }

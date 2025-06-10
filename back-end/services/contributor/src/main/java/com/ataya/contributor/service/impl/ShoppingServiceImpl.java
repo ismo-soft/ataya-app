@@ -1,6 +1,7 @@
 package com.ataya.contributor.service.impl;
 
 import com.ataya.contributor.dto.product.ProductItemDto;
+import com.ataya.contributor.dto.product.ProductItemDtoPage;
 import com.ataya.contributor.dto.shoppingCart.ShoppingCartDto;
 import com.ataya.contributor.dto.store.StoreDto;
 import com.ataya.contributor.dto.store.StoreDtoPage;
@@ -33,13 +34,17 @@ public class ShoppingServiceImpl implements ShoppingService {
                     "Store ID cannot be null or empty"
             );
         }
-        List<ProductItemDto> products = restService.getProducts(storeId, name, category, minPrice, maxPrice, brand, page, size);
+        ProductItemDtoPage productPage = restService.getProducts(storeId, name, category, minPrice, maxPrice, brand, page, size);
         return ApiResponse.<List<ProductItemDto>>builder().
-                data(products)
+                data(productPage.getProducts())
                 .message("Products retrieved successfully")
                 .statusCode(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .timestamp(LocalDateTime.now())
+                .page(productPage.getPageNumber())
+                .size(productPage.getPageSize())
+                .total(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
                 .build();
     }
 
