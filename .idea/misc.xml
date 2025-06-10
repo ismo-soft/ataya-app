@@ -15,6 +15,7 @@
         <option value="$PROJECT_DIR$/back-end/services/discovery/pom.xml" />
         <option value="$PROJECT_DIR$/back-end/services/config_service/pom.xml" />
         <option value="$PROJECT_DIR$/back-end/services/gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/back-end/services/beneficiary/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

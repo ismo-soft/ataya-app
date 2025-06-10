@@ -547,6 +547,53 @@ public class InventoryServiceImpl implements InventoryService {
         }
     }
 
+    @Override
+    public ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, Integer page, Integer size) {
+        if (companyId == null) {
+            throw new InvalidOperationException(
+                    "view Inventory Items", "not authorized"
+            );
+        }
+
+        List<Criteria> criteria = new ArrayList<>();
+        if (availableQuantity != null && availableQuantity) {
+            criteria.add(Criteria.where("quantity").gt(0));
+        }
+        if (suspendedQuantity != null && suspendedQuantity) {
+            criteria.add(Criteria.where("suspendedQuantity").gt(0));
+        }
+        if (waitingForBeneficiaryQuantity != null && waitingForBeneficiaryQuantity) {
+            criteria.add(Criteria.where("waitingForBeneficiaryQuantity").gt(0));
+        }
+        if (deliveredQuantity != null && deliveredQuantity) {
+            criteria.add(Criteria.where("deliveredQuantity").gt(0));
+        }
+        criteria.add(Criteria.where("companyId").is(companyId));
+
+        Query query = new Query();
+        query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
+
+        long total = inventoryRepository.countInventoryByQuery(query);
+
+        int pg = page == null || page < 0 ? 0 : page;
+        int sz = size == null || size <  0 ? 10 : size;
+        PageRequest pageRequest = PageRequest.of(pg, sz);
+        query.with(pageRequest);
+        List<Inventory> inventories = inventoryRepository.findInventoryByQuery(query);
+
+        return ApiResponse.<List<InventoryItemInfo>>builder()
+                .status(HttpStatus.OK.getReasonPhrase())
+                .total(total)
+                .page(pg)
+                .size(sz)
+                .statusCode(HttpStatus.OK.value())
+                .timestamp(LocalDateTime.now())
+                .data(inventories.stream().map(inventoryMapper::toInventoryItemInfo).toList())
+                .message("Inventory items retrieved successfully")
+                .statistics(getStatistics(null))
+                .build();
+    }
+
     private void setDiscount(Inventory inventory, Double discount, Double discountRate) {
         if (discount != null) {
             useDiscount(inventory, discount);

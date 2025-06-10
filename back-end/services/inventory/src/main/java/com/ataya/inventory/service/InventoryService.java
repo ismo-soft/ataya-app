@@ -40,4 +40,6 @@ public interface InventoryService {
     void releaseSuspendedItem(String itemId, Double quantity);
 
     void releaseSuspendedForSoldItems(CartItemStatistics itemRequest);
+
+    ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, Integer page, Integer size);
 }

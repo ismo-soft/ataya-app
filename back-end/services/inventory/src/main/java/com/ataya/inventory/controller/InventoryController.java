@@ -282,6 +282,47 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.editInventoryItemQuantity(request, user));
     }
 
+    // get by quantity type
+    @GetMapping("/get-by-quantity-type")
+    @Operation(
+            summary = "get inventory items by quantity type",
+            description = """
+                    This endpoint reads token and authorize items those can user access \s
+                    This endpoint returns inventory items filtered by quantity type. \s
+                    
+                    Request parameters: \s
+                    
+                        - available: filter by available quantity \n\t
+                        - suspended: filter by suspended quantity \n\t
+                        - pending: filter by waiting for beneficiary quantity \n\t
+                        - delivered: filter by delivered quantity \n\t
+                        - pg: page number \n\t
+                        - sz: page size \n\t
+                    available, suspended, pending and delivered are optional and boolean\s
+                    
+                    ### Authentication: \t Token is required \s
+                    ### Authorization: \t No Authority for this endpoint (user with any role can access this endpoint) \t
+                    """
+    )
+    public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> getByQuantityType(
+                                                                                    @RequestParam(required = false, name = "available") Boolean availableQuantity,
+                                                                                    @RequestParam(required = false, name = "suspended") Boolean suspendedQuantity,
+                                                                                    @RequestParam(required = false, name = "pending") Boolean waitingForBeneficiaryQuantity,
+                                                                                    @RequestParam(required = false, name = "delivered") Boolean deliveredQuantity,
+                                                                                    @AuthenticationPrincipal User user,
+                                                                                    @RequestParam (required = false, name = "pg", defaultValue = "0") Integer page,
+                                                                                    @RequestParam (required = false, name = "sz", defaultValue = "10") Integer size){
+        return ResponseEntity.ok(inventoryService.getByQuantityType(
+                availableQuantity,
+                suspendedQuantity,
+                waitingForBeneficiaryQuantity,
+                deliveredQuantity,
+                user.getCompanyId(),
+                page,
+                size
+        ));
+    }
+
 
 
 }
