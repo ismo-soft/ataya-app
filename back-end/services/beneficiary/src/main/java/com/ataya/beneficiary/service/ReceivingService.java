@@ -11,5 +11,5 @@ public interface ReceivingService {
 
     ApiResponse<StoreDto> getStoreById(String id);
 
-    ApiResponse<List<ProductItemDto>> getProducts(String storeId, String name, String category, Double minPrice, Double maxPrice, String brand, int page, int size);
+    ApiResponse<List<ProductItemDto>> getProducts(String storeId, String name, String category, String brand, int page, int size);
 }

@@ -1,6 +1,7 @@
 package com.ataya.beneficiary.service.impl;
 
 import com.ataya.beneficiary.dto.product.ProductItemDto;
+import com.ataya.beneficiary.dto.product.ProductItemDtoPage;
 import com.ataya.beneficiary.dto.store.StoreDto;
 import com.ataya.beneficiary.dto.store.StoreDtoPage;
 import com.ataya.beneficiary.exception.custom.ResourceNotFoundException;
@@ -59,9 +60,16 @@ public class ReceivingServiceImpl implements ReceivingService {
     }
 
     @Override
-    public ApiResponse<List<ProductItemDto>> getProducts(String storeId, String name, String category, Double minPrice, Double maxPrice, String brand, int page, int size) {
-        List<ProductItemDto> products = restService.getProducts(storeId, name, category, minPrice, maxPrice, brand, page, size);
-        if (products == null || products.isEmpty()) {
+    public ApiResponse<List<ProductItemDto>> getProducts(String storeId, String name, String category, String brand, int page, int size) {
+        ProductItemDtoPage productPage = restService.getProducts(storeId, name, category, brand, page, size);
+        if (productPage == null) {
+            throw new ResourceNotFoundException(
+                    "products",
+                    "storeId: " + storeId + ", name: " + name + ", category: " + category,
+                    "No products found for the given criteria."
+            );
+        }
+        if (productPage.getProducts() == null || productPage.getProducts().isEmpty()) {
             throw new ResourceNotFoundException(
                     "products",
                     "storeId: " + storeId + ", name: " + name + ", category: " + category,
@@ -69,11 +77,15 @@ public class ReceivingServiceImpl implements ReceivingService {
             );
         }
         return ApiResponse.<List<ProductItemDto>>builder()
-                .data(products)
+                .data(productPage.getProducts())
                 .message("Products retrieved successfully.")
                 .status(HttpStatus.OK.getReasonPhrase())
                 .statusCode(HttpStatus.OK.value())
                 .timestamp(LocalDateTime.now())
+                .page(productPage.getPageNumber())
+                .size(productPage.getPageSize())
+                .total(productPage.getTotalElements())
+                .totalPages(productPage.getTotalPages())
                 .build();
     }
 }

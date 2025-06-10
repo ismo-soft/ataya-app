@@ -1,6 +1,7 @@
 package com.ataya.beneficiary.service.impl;
 
 import com.ataya.beneficiary.dto.product.ProductItemDto;
+import com.ataya.beneficiary.dto.product.ProductItemDtoPage;
 import com.ataya.beneficiary.dto.store.StoreDto;
 import com.ataya.beneficiary.dto.store.StoreDtoPage;
 import com.ataya.beneficiary.exception.custom.ValidationException;
@@ -51,7 +52,17 @@ public class RestServiceImpl implements RestService {
     }
 
     @Override
-    public List<ProductItemDto> getProducts(String storeId, String name, String category, Double minPrice, Double maxPrice, String brand, int page, int size) {
-        return List.of();
+    public ProductItemDtoPage getProducts(String storeId, String name, String category, String brand, int page, int size) {
+        if (storeId == null || storeId.isEmpty()) {
+            throw new ValidationException("store ID", "Store ID cannot be null or empty", "Invalid store ID provided");
+        }
+        String url = String.format("%s/products/to-deliver?strId=%s&nm=%s&cat=%s&brand=%s&page=%d&size=%d",
+                inventoryServiceUrl, storeId, name, category, brand, page, size);
+        System.out.println("Fetching products from URL: " + url);
+        ProductItemDtoPage productPage = restTemplate.getForObject(url, ProductItemDtoPage.class);
+        if (productPage == null || productPage.getProducts() == null) {
+            throw new ValidationException("products", "No products found", "No products available for the provided criteria");
+        }
+        return productPage;
     }
 }

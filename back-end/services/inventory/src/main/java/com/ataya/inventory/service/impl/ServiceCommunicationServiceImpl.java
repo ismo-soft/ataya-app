@@ -113,8 +113,10 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
     @Override
     public ProductItemDtoPage getProductsToDeliver(String storeId, String name, String category, String brand, int page, int size) {
         List<Inventory> inventories = inventoryRepository.findByStoreIdAndWaitingForBeneficiaryQuantityGreaterThan(storeId, 0.0);
+        // print all inventories
+        inventories.forEach(inventory -> System.out.println("Inventory: " + inventory.getId() + ", Quantity: " + inventory.getWaitingForBeneficiaryQuantity()));
         List<ProductItemDto> products = inventories.stream()
-                .filter(inventory -> applyFilters(inventory, name, category, null, null, brand))
+//                .filter(inventory -> applyFilters(inventory, name, category, brand))
                 .skip((long) page * size)
                 .limit(size)
                 .map(inventory -> ProductItemDto.builder()
@@ -123,6 +125,7 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
                         .productName(inventory.getProductName())
                         .productBrand(inventory.getProductBrand())
                         .productCategory(inventory.getProductCategory())
+                        .availableQuantity(1.0)
                         .imageUrl(inventory.getProductImageUrl())
                         .build())
                 .toList();
@@ -164,5 +167,23 @@ public class ServiceCommunicationServiceImpl implements ServiceCommunicationServ
         }
 
         return maxPrice == null || effectivePrice <= maxPrice;
+    }
+
+    private boolean applyFilters(Inventory inventory, String name, String category,
+                                 String brand) {
+
+        // Apply name filter
+        if (name != null && !inventory.getProductName().toLowerCase().contains(name.toLowerCase())) {
+            return false;
+        }
+
+        // Apply category filter
+        if (category != null && !inventory.getProductCategory().toLowerCase().contains(category.toLowerCase())) {
+            return false;
+        }
+
+        // Apply brand filter
+        return brand == null || inventory.getProductBrand().toLowerCase().contains(brand.toLowerCase());
+        // No price filters applied, so we return true
     }
 }
