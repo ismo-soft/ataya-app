@@ -44,7 +44,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 
     @Override
-    public ApiResponse<List<InventoryItemInfo>> getFilteredInventoryItems(String quantity, String price, String discountedPrice, String discount, String discountRate, String storeId, String companyId, String productId, Integer page, Integer size) {
+    public ApiResponse<List<InventoryItemInfo>> getFilteredInventoryItems(String quantity,String name, String category, String brand, String price, String discountedPrice, String discount, String discountRate, String storeId, String companyId, String productId, Integer page, Integer size) {
         if(companyId == null) {
             throw new InvalidOperationException(
                     "view Inventory Items","not authorized"
@@ -58,6 +58,9 @@ public class InventoryServiceImpl implements InventoryService {
         addCriteriaWithRange(criteria, "discount", discount);
         addCriteriaWithRange(criteria, "discountRate", discountRate);
         addCriteria(criteria, "storeId", storeId);
+        addCriteria(criteria,"productName", name);
+        addCriteria(criteria, "productCategory", category);
+        addCriteria(criteria, "productBrand", brand);
         addCriteria(criteria, "companyId", companyId);
         addCriteria(criteria, "productId", productId);
 
@@ -548,7 +551,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, Integer page, Integer size) {
+    public ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, String storeId, Integer page, Integer size) {
         if (companyId == null) {
             throw new InvalidOperationException(
                     "view Inventory Items", "not authorized"
@@ -567,6 +570,9 @@ public class InventoryServiceImpl implements InventoryService {
         }
         if (deliveredQuantity != null && deliveredQuantity) {
             criteria.add(Criteria.where("deliveredQuantity").gt(0));
+        }
+        if (storeId != null) {
+            criteria.add(Criteria.where("storeId").is(storeId));
         }
         criteria.add(Criteria.where("companyId").is(companyId));
 
@@ -590,7 +596,7 @@ public class InventoryServiceImpl implements InventoryService {
                 .timestamp(LocalDateTime.now())
                 .data(inventories.stream().map(inventoryMapper::toInventoryItemInfo).toList())
                 .message("Inventory items retrieved successfully")
-                .statistics(getStatistics(null))
+                .statistics(getStatistics(storeId))
                 .build();
     }
 

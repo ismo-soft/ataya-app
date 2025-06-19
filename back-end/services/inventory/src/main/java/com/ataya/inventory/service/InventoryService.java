@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface InventoryService {
-    ApiResponse<List<InventoryItemInfo>> getFilteredInventoryItems(String quantity, String price, String discountedPrice ,String discount, String discountRate, String storeId, String companyId, String productId, Integer page, Integer size);
+    ApiResponse<List<InventoryItemInfo>> getFilteredInventoryItems(String quantity,String name, String category, String brand, String price, String discountedPrice ,String discount, String discountRate, String storeId, String companyId, String productId, Integer page, Integer size);
 
     ApiResponse<InventoryItemInfo> updateInventoryItem(UpdateInventoryRequest requestBody, User user, String productId, String storeId);
 
@@ -41,5 +41,5 @@ public interface InventoryService {
 
     void releaseSuspendedForSoldItems(CartItemStatistics itemRequest);
 
-    ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, Integer page, Integer size);
+    ApiResponse<List<InventoryItemInfo>> getByQuantityType(Boolean availableQuantity, Boolean suspendedQuantity, Boolean waitingForBeneficiaryQuantity, Boolean deliveredQuantity, String companyId, String storeId, Integer page, Integer size);
 }

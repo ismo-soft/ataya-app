@@ -52,6 +52,9 @@ public class InventoryController {
                     """
     )
     public ResponseEntity<ApiResponse<List<InventoryItemInfo>>> getFilteredInventoryItems(@RequestParam(required = false, name = "qty") String quantity,
+                                                                                          @RequestParam(required = false, name = "nm") String name,
+                                                                                          @RequestParam(required = false, name = "cat") String category,
+                                                                                          @RequestParam(required = false, name = "brd") String brand,
                                                                                           @RequestParam(required = false, name = "prc") String price,
                                                                                           @RequestParam(required = false, name = "dis-prc") String discountedPrice,
                                                                                           @RequestParam(required = false, name = "dCnt") String discount,
@@ -63,6 +66,9 @@ public class InventoryController {
                                                                                           @RequestParam(required = false, name = "prd") String productId){
         return ResponseEntity.ok(inventoryService.getFilteredInventoryItems(
                 quantity,
+                name,
+                category,
+                brand,
                 price,
                 discountedPrice,
                 discount,
@@ -318,6 +324,7 @@ public class InventoryController {
                 waitingForBeneficiaryQuantity,
                 deliveredQuantity,
                 user.getCompanyId(),
+                user.getStoreId(),
                 page,
                 size
         ));
