@@ -41,7 +41,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                     "Items cannot be null or empty"
             );
         }
-        if (quantity == null || quantity <= 0 || quantity >= 10) {
+        if (quantity == null || quantity <= 0 || quantity > 10) {
             throw new InvalidOperationException(
                     "add items to cart",
                     "Quantity must be greater than 0 and less than 10"
