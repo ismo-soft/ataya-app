@@ -15,6 +15,9 @@ public class InventoryItemInfo {
     private String storeId;
     private String productId;
     private Double quantity;
+    private String productName;
+    private String productCategory;
+    private String productBrand;
     private Double suspendedQuantity;
     private Double waitingForBeneficiaryQuantity;
     private Double deliveredQuantity;
