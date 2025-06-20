@@ -161,4 +161,30 @@ public class ShoppingServiceImpl implements ShoppingService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @Override
+    public ApiResponse<ShoppingCartDto> emptyUserShoppingCart(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new InvalidOperationException(
+                    "empty user shopping cart",
+                    "User ID cannot be null or empty"
+            );
+        }
+        ShoppingCart shoppingCart = shoppingCartService.getCustomerShoppingCart(id);
+        if (shoppingCart == null) {
+            throw new InvalidOperationException(
+                    "empty user shopping cart",
+                    "No shopping cart found for user ID: " + id
+            );
+        }
+        shoppingCartService.resetUserShoppingCart(id);
+        ShoppingCartDto emptyCart = shoppingCartService.getCartItems(id);
+        return ApiResponse.<ShoppingCartDto>builder()
+                .data(emptyCart)
+                .message("User shopping cart emptied successfully")
+                .statusCode(HttpStatus.OK.value())
+                .status(HttpStatus.OK.getReasonPhrase())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }

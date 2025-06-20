@@ -308,6 +308,44 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
         return restService.areItemsAvailableToBuy(itemToQuantityMap);
     }
+
+    @Override
+    public void resetUserShoppingCart(String id) {
+        // Validate the user ID
+        if (id == null || id.isEmpty()) {
+            throw new InvalidOperationException(
+                    "reset user shopping cart",
+                    "User ID cannot be null or empty"
+            );
+        }
+        // validate the user have only one shopping cart
+        ShoppingCart shoppingCart = shoppingCartRepository.findByCustomerId(id)
+                .orElseThrow(() -> new InvalidOperationException(
+                        "reset user shopping cart",
+                        "No shopping cart found for user ID: " + id
+                )
+            );
+        if (shoppingCart.getItems() == null || shoppingCart.getItems().isEmpty()) {
+            throw new InvalidOperationException(
+                    "reset user shopping cart",
+                    "Shopping cart is already empty for user ID: " + id
+            );
+        }
+        shoppingCartMovementService.insertResetCartMovement(
+                shoppingCart.getId(),
+                id,
+                shoppingCart.getItems()
+        );
+        // reset the shopping cart items
+        List<CartItem> items = shoppingCart.getItems();
+        for (CartItem item : items) {
+            removeItemFromCart(id, item.getQuantity(), item.getItemId());
+        }
+
+        shoppingCart.setItems(new ArrayList<>());
+        shoppingCart.setTotalAmount(0.0);
+        shoppingCartRepository.save(shoppingCart);
+    }
 }
 
 

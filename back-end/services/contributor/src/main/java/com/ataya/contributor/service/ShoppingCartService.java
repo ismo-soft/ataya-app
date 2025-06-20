@@ -19,4 +19,6 @@ public interface ShoppingCartService {
     void emptyUserShoppingCart(String id);
 
     Map<String, Boolean> checkItemsAvailability(List<CartItem> items);
+
+    void resetUserShoppingCart(String id);
 }

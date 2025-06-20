@@ -7,7 +7,7 @@ public enum ShoppingCartMovementType {
     INCREASE_QUANTITY,
     DECREASE_QUANTITY,
     DELETE,
-    POST;
+    POST, RESET;
 
     public static ShoppingCartMovementType fromString(String type) {
         for (ShoppingCartMovementType movementType : ShoppingCartMovementType.values()) {

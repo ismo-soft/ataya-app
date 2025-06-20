@@ -3,6 +3,7 @@ package com.ataya.contributor.service.impl;
 import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.enums.ShoppingCartMovementType;
 import com.ataya.contributor.exception.custom.InvalidOperationException;
+import com.ataya.contributor.model.CartItem;
 import com.ataya.contributor.model.ShoppingCartMovement;
 import com.ataya.contributor.repo.ShoppingCartMovementRepository;
 import com.ataya.contributor.service.ShoppingCartMovementService;
@@ -160,6 +161,16 @@ public class ShoppingCartMovementServiceImpl implements ShoppingCartMovementServ
             throw new InvalidOperationException("removeAllCartMovements", "No movements found for the given shopping cart ID: " + id);
         }
         shoppingCartMovementRepository.deleteAll(movements);
+    }
+
+    @Override
+    public void insertResetCartMovement(String id, String id1, List<CartItem> items) {
+        ShoppingCartMovement shoppingCart = ShoppingCartMovement.builder()
+                .shoppingCartId(id)
+                .movement(ShoppingCartMovementType.RESET)
+                .happenedAt(LocalDateTime.now().toString())
+                .build();
+        shoppingCartMovementRepository.save(shoppingCart);
     }
 
 

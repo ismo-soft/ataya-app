@@ -77,4 +77,13 @@ public class ShoppingController {
         return ResponseEntity.ok(shoppingService.getStoreById(storeId));
 
     }
+
+    @PutMapping("/cart/empty")
+    @Operation(summary = "Empty user shopping cart")
+    private ResponseEntity<ApiResponse<ShoppingCartDto>> emptyUserShoppingCart(@AuthenticationPrincipal Contributor user) {
+        return ResponseEntity.ok(
+                shoppingService.emptyUserShoppingCart(user.getId())
+        );
+
+    }
 }

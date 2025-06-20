@@ -20,4 +20,6 @@ public interface ShoppingService {
     ApiResponse<List<StoreDto>> getAllStores(Integer page, Integer size);
 
     ApiResponse<StoreDto> getStoreById(String storeId);
+
+    ApiResponse<ShoppingCartDto> emptyUserShoppingCart(String id);
 }

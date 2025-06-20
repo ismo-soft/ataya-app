@@ -2,6 +2,7 @@ package com.ataya.contributor.service;
 
 import com.ataya.contributor.dto.store.CartItemStatistics;
 import com.ataya.contributor.enums.ShoppingCartMovementType;
+import com.ataya.contributor.model.CartItem;
 import com.ataya.contributor.model.ShoppingCartMovement;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface ShoppingCartMovementService {
     List<ShoppingCartMovement> GetByType(List<ShoppingCartMovement> movements, ShoppingCartMovementType shoppingCartMovementType);
 
     void removeAllCartMovements(String id);
+
+    void insertResetCartMovement(String id, String id1, List<CartItem> items);
 }
