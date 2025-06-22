@@ -75,7 +75,7 @@ public class ShoppingServiceImpl implements ShoppingService {
     @Override
     public ApiResponse<ShoppingCartDto> getCartItems(String userId) {
         ShoppingCartDto shoppingCartDto = shoppingCartService.getCartItems(userId);
-        if (shoppingCartDto == null || shoppingCartDto.getItems().isEmpty()) {
+        if (shoppingCartDto == null) {
             throw new InvalidOperationException(
                     "get cart items",
                     "No items found in the cart for user ID: " + userId
@@ -83,7 +83,7 @@ public class ShoppingServiceImpl implements ShoppingService {
         }
         return ApiResponse.<ShoppingCartDto>builder()
                 .data(shoppingCartDto)
-                .message("Cart items retrieved successfully")
+                .message(shoppingCartDto.getItems().isEmpty() ? "No items found in the cart" : "Cart items retrieved successfully")
                 .statusCode(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .timestamp(LocalDateTime.now())
