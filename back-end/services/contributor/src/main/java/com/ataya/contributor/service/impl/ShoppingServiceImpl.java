@@ -81,9 +81,12 @@ public class ShoppingServiceImpl implements ShoppingService {
                     "No items found in the cart for user ID: " + userId
             );
         }
+        if (shoppingCartDto.getItems() != null) {
+            String message = shoppingCartDto.getItems().isEmpty() ? "No items found in the cart" : "Cart items retrieved successfully";
+        }
         return ApiResponse.<ShoppingCartDto>builder()
                 .data(shoppingCartDto)
-                .message(shoppingCartDto.getItems().isEmpty() ? "No items found in the cart" : "Cart items retrieved successfully")
+                .message("Cart items retrieved successfully")
                 .statusCode(HttpStatus.OK.value())
                 .status(HttpStatus.OK.getReasonPhrase())
                 .timestamp(LocalDateTime.now())
