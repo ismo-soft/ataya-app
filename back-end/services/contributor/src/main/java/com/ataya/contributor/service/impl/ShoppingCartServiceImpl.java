@@ -138,10 +138,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             );
         }
         Optional<ShoppingCart> optionalCart = shoppingCartRepository.findById(userId);
-        ShoppingCart shoppingCart = optionalCart.orElseThrow(() -> new InvalidOperationException(
-                "get cart items",
-                "No cart found for user ID: " + userId
-        ));
+        ShoppingCart shoppingCart = optionalCart.orElse(null);
+        if (shoppingCart == null) {
+            return new ShoppingCartDto();
+        }
 
         ShoppingCartDto shoppingCartDto = new ShoppingCartDto();
         shoppingCartDto.setId(shoppingCart.getId());
