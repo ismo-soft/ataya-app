@@ -9,11 +9,11 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://admin:admin@localhost:27017/company_db?authSource=admin
+      uri: mongodb://admin:admin@mongo:27017/company_db?authSource=admin
 
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
     consumer:
       group-id: company-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

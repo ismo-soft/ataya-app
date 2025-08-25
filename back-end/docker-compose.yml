@@ -1,24 +1,21 @@
+version: '3.9'
+
 services:
   mongo:
     image: mongo:latest
     container_name: mongo
     environment:
-        MONGO_INITDB_ROOT_USERNAME: admin
-        MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-        - "0.0.0.0:27017:27017"
+      - "27017:27017"
     networks:
-      - Mongo
+      - app-network
     restart: unless-stopped
     volumes:
-      - type: volume
-        source: MONGO_DATA
-        target: /data/db
-      - type: volume
-        source: MONGO_CONFIG
-        target: /data/configdb
+      - MONGO_DATA:/data/db
+      - MONGO_CONFIG:/data/configdb
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-
 
   mongo-express:
     image: mongo-express:latest
@@ -31,9 +28,9 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: admin
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     ports:
-      - "0.0.0.0:8081:8081"
+      - "8081:8081"
     networks:
-      - Mongo
+      - app-network
     depends_on:
       - mongo
     restart: unless-stopped
@@ -44,6 +41,8 @@ services:
     container_name: zookeeper
     ports:
       - '2181:2181'
+    networks:
+      - app-network
 
   kafka:
     image: wurstmeister/kafka
@@ -53,20 +52,82 @@ services:
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - TOPIC_AUTO_CREATE=false
       - DELETE_TOPIC_ENABLE=true
     depends_on:
       - zookeeper
+    networks:
+      - app-network
+
+  address:
+    image: smlkttn836/address-service:latest
+    container_name: address-service
+    ports:
+      - "8090:8090"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - kafka
+
+  company:
+    image: smlkttn836/company-service:latest
+    container_name: company-service
+    ports:
+      - "8091:8091"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - kafka
+
+  inventory:
+    image: smlkttn836/inventory-service:latest
+    container_name: inventory-service
+    ports:
+      - "8092:8092"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - kafka
+
+  contributor:
+    image: smlkttn836/contributor-service:latest
+    container_name: contributor-service
+    ports:
+      - "8093:8093"
+    networks:
+      - app-network
+    depends_on:
+      - mongo
+      - kafka
+
+  discovery:
+    image: smlkttn836/discovery-service:latest
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+
+  gateway:
+    image: smlkttn836/gateway-service:latest
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - discovery
 
 networks:
-  Mongo:
-    name: mongo-network
+  app-network:
+    driver: bridge
 
 volumes:
   MONGO_DATA:
-    name: MONGO_DATA
   MONGO_CONFIG:
-    name: MONGO_CONFIG

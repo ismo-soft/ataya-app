@@ -3,7 +3,7 @@ spring:
     name: address
   data:
     mongodb:
-      uri: mongodb://admin:admin@localhost:27017/address_db?authSource=admin
+      uri: mongodb://admin:admin@mongo:27017/address_db?authSource=admin
 
 ataya:
   app:
@@ -28,7 +28,7 @@ ataya:
 
   address:
     company-service:
-      url: http://localhost:8091/service-communication
+      url: http://company:8091/service-communication
 
 server:
   port: 8090

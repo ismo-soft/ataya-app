@@ -3,9 +3,9 @@ spring:
     name: inventory
   data:
     mongodb:
-      uri: mongodb://admin:admin@localhost:27017/inventory_db?authSource=admin
+      uri: mongodb://admin:admin@mongo:27017/inventory_db?authSource=admin
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
 
 ataya:
   app:
@@ -14,7 +14,7 @@ ataya:
 
   inventory:
     product-service:
-      url: http://localhost:8091/service-communication
+      url: http://company:8091/service-communication
 
 server:
   port: 8092
