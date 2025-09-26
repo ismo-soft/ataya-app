@@ -22,10 +22,20 @@ ataya:
       url: http://company:8091/service-communication
 
 server:
-  Port: 8093
+  port: 8093
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    hostname: contributor

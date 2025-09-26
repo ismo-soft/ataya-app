@@ -7,7 +7,7 @@ spring:
       uri: mongodb://admin:admin@localhost:27017/beneficiary_db?authSource=admin
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:9092
 
 ataya:
   app:

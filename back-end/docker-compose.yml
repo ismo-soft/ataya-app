@@ -62,6 +62,24 @@ services:
     networks:
       - app-network
 
+  kafka-topics:
+    image: wurstmeister/kafka
+    container_name: kafka-topics
+    depends_on:
+      - kafka
+    networks:
+      - app-network
+    command: >
+      bash -c "
+        echo 'Waiting for Kafka to be ready...'
+        sleep 30
+        kafka-topics.sh --create --bootstrap-server kafka:9092 --topic suspend-item-from-inventory --partitions 1 --replication-factor 1 --if-not-exists
+        kafka-topics.sh --create --bootstrap-server kafka:9092 --topic cart-item-statistics --partitions 1 --replication-factor 1 --if-not-exists
+        kafka-topics.sh --list --bootstrap-server kafka:9092
+        echo 'Topics created successfully'
+      "
+    restart: "no"
+
   address:
     image: smlkttn836/address-service:latest
     container_name: address-service
@@ -72,6 +90,10 @@ services:
     depends_on:
       - mongo
       - kafka
+      - discovery
+    environment:
+      eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+    restart: unless-stopped
 
   company:
     image: smlkttn836/company-service:latest
@@ -83,6 +105,10 @@ services:
     depends_on:
       - mongo
       - kafka
+      - discovery
+    environment:
+      eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+    restart: unless-stopped
 
   inventory:
     image: smlkttn836/inventory-service:latest
@@ -94,6 +120,10 @@ services:
     depends_on:
       - mongo
       - kafka
+      - discovery
+    environment:
+      eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+    restart: unless-stopped
 
   contributor:
     image: smlkttn836/contributor-service:latest
@@ -105,6 +135,12 @@ services:
     depends_on:
       - mongo
       - kafka
+      - kafka-topics
+      - discovery
+    environment:
+      eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+      spring.kafka.bootstrap-servers: kafka:9092
+    restart: unless-stopped
 
   discovery:
     image: smlkttn836/discovery-service:latest
@@ -123,6 +159,9 @@ services:
       - app-network
     depends_on:
       - discovery
+    environment:
+      eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+    restart: unless-stopped
 
 networks:
   app-network:
