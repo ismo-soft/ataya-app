@@ -1,17 +1,37 @@
-# Microservices E-Commerce Platform
+# Social Commerce Platform - Suspended Products Management
 
-A comprehensive microservices-based e-commerce platform built with Spring Boot, MongoDB, and Apache Kafka for scalable business operations.
+A microservices-based platform where companies can upload and manage products, users can purchase items, and set products as "suspended" to help people with financial difficulties access essential goods.
 
 ## 🏗️ Architecture Overview
 
-This project follows a microservices architecture pattern with the following key components:
+This project follows a microservices architecture pattern designed to facilitate social commerce through suspended product donations:
 
-- **Company Service** - Manages company, store, product, and worker information
-- **Address Service** - Handles address management and location data
-- **Inventory Service** - Manages stock levels and inventory operations
-- **Contributor Service** - Handles contributor data and related operations
+- **Company Service** - Companies can register, upload products, and manage inventory quantities
+- **Address Service** - Handles shipping addresses for product deliveries
+- **Inventory Service** - Manages product stock levels and availability
+- **Contributor Service** - Manages users who purchase products to suspend them for others
 - **Discovery Service** - Eureka service registry for service discovery
 - **Gateway Service** - API Gateway for routing and load balancing
+
+## 🎯 Core Features
+
+### For Companies
+- Register and manage company profiles
+- Upload product catalogs with descriptions and images
+- Track inventory quantities and availability
+- Manage store locations and worker accounts
+
+### For Contributors (Buyers)
+- Browse available products from various companies
+- Purchase products for immediate delivery
+- **Suspend products** - Buy products to help people with financial difficulties
+- Track contribution history and impact
+
+### Social Impact System
+- Products can be marked as "suspended" by contributors
+- People facing financial hardship can claim suspended products
+- Real-time inventory management ensures availability
+- Event-driven notifications for suspended item activities
 
 ## 🛠️ Technologies Used
 
@@ -84,13 +104,13 @@ docker-compose ps
 |---------|------|--------------|-------------|
 | **API Gateway** | 8080 | `http://localhost:8080/actuator/health` | Main entry point |
 | **Discovery Service** | 8761 | `http://localhost:8761` | Eureka Dashboard |
-| **Company Service** | 8091 | `http://localhost:8091/actuator/health` | Company management |
-| **Address Service** | 8090 | `http://localhost:8090/actuator/health` | Address management |
-| **Inventory Service** | 8092 | `http://localhost:8092/actuator/health` | Inventory management |
-| **Contributor Service** | 8093 | `http://localhost:8093/actuator/health` | Contributor management |
+| **Company Service** | 8091 | `http://localhost:8091/actuator/health` | Company & product management |
+| **Address Service** | 8090 | `http://localhost:8090/actuator/health` | Delivery address management |
+| **Inventory Service** | 8092 | `http://localhost:8092/actuator/health` | Stock & suspension management |
+| **Contributor Service** | 8093 | `http://localhost:8093/actuator/health` | User purchases & contributions |
 | **MongoDB** | 27017 | - | Database |
 | **Mongo Express** | 8081 | `http://localhost:8081` | DB Admin Interface |
-| **Kafka** | 9092 | - | Message broker |
+| **Kafka** | 9092 | - | Event streaming for suspensions |
 
 ## 🗃️ Database Configuration
 
@@ -107,10 +127,10 @@ docker-compose ps
 
 ## 📨 Kafka Topics
 
-The following Kafka topics are automatically created:
+The following Kafka topics handle the social commerce workflow:
 
-- `suspend-item-from-inventory` - Inventory suspension events
-- `cart-item-statistics` - Shopping cart analytics
+- `suspend-item-from-inventory` - Events when contributors suspend products for others
+- `cart-item-statistics` - Analytics for product purchases and suspension activities
 
 ## 🔧 Development Setup
 
@@ -209,14 +229,20 @@ docker-compose logs --tail=100 inventory
 
 ### API Testing
 
-Use the following base URLs for testing:
+Use the following base URLs for testing the social commerce features:
 
 ```bash
-# Through API Gateway
-curl http://localhost:8080/api/company/health
+# Through API Gateway - Company endpoints
+curl http://localhost:8080/api/company/products
+curl http://localhost:8080/api/company/stores
+
+# Through API Gateway - Contributor endpoints  
+curl http://localhost:8080/api/contributor/suspend-product
+curl http://localhost:8080/api/contributor/purchases
 
 # Direct service access
-curl http://localhost:8091/actuator/health
+curl http://localhost:8091/actuator/health  # Company service
+curl http://localhost:8093/actuator/health  # Contributor service
 ```
 
 ### Load Testing
@@ -262,11 +288,13 @@ For support and questions:
 
 ## 🔮 Roadmap
 
-- [ ] Add authentication service
-- [ ] Implement caching layer (Redis)
+- [ ] Add user authentication for contributors and companies
+- [ ] Implement notification system for suspended product claims
+- [ ] Add mobile app for easier access to suspended products
+- [ ] Implement rating system for companies and products
+- [ ] Add analytics dashboard for social impact tracking
+- [ ] Implement caching layer (Redis) for better performance
 - [ ] Add monitoring (Prometheus + Grafana)
-- [ ] Implement distributed tracing
-- [ ] Add CI/CD pipeline
-- [ ] API documentation with Swagger
-- [ ] Performance optimization
-- [ ] Security enhancements
+- [ ] Geographic-based product suggestions
+- [ ] Integration with payment gateways
+- [ ] Multi-language support for global accessibility
