@@ -93,6 +93,8 @@ services:
       - discovery
     environment:
       eureka.client.service-url.defaultZone: http://discovery:8761/eureka/
+      ATAYA_APP_HERE_API_KEY: ULvqf5w5L1jItMQ-JEdvBk6MmpuzCcI30OJ2m5wSON8
+      ATAYA_APP_HERE_APP_ID: McZI7v5Wiv19C3inxawU
     restart: unless-stopped
 
   company:
